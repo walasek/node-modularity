@@ -57,13 +57,16 @@
 
 
     <section class="readme usertext">
-        <article><h1><a href="https://github.com/walasek/node-modularity">node-modularity</a> <a href="https://travis-ci.org/walasek/node-modularity"><img src="https://img.shields.io/travis/walasek/node-modularity.svg?style=flat-square" alt="Build Status"></a> <a href="https://www.npmjs.com/package/node-modularity"><img src="https://img.shields.io/npm/v/node-modularity.svg?style=flat-square" alt="Package Version"></a> <img src="https://img.shields.io/npm/l/node-modularity.svg?style=flat-square" alt="License"> <a href="https://david-dm.org/walasek/node-modularity"><img src="https://david-dm.org/walasek/node-modularity.svg" alt="Dependencies"></a>  <a href="https://codecov.io/gh/walasek/node-modularity"><img src="https://codecov.io/gh/walasek/node-modularity/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://snyk.io/test/github/walasek/node-modularity?targetFile=package.json"><img src="https://snyk.io/test/github/walasek/node-modularity/badge.svg?targetFile=package.json" alt="Known Vulnerabilities"></a></h1>
+        <article><h1><a href="https://github.com/walasek/node-modularity">node-modularity</a></h1>
+<p><a href="https://travis-ci.org/walasek/node-modularity"><img src="https://img.shields.io/travis/walasek/node-modularity.svg?style=flat-square" alt="Build Status"></a> <a href="https://www.npmjs.com/package/node-modularity"><img src="https://img.shields.io/npm/v/node-modularity.svg?style=flat-square" alt="Package Version"></a> <img src="https://img.shields.io/npm/l/node-modularity.svg?style=flat-square" alt="License"> <a href="https://david-dm.org/walasek/node-modularity"><img src="https://david-dm.org/walasek/node-modularity.svg" alt="Dependencies"></a>  <a href="https://codecov.io/gh/walasek/node-modularity"><img src="https://codecov.io/gh/walasek/node-modularity/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://snyk.io/test/github/walasek/node-modularity?targetFile=package.json"><img src="https://snyk.io/test/github/walasek/node-modularity/badge.svg?targetFile=package.json" alt="Known Vulnerabilities"></a></p>
 <p>An easy dependency injection framework for any JavaScript application.</p>
 <p><a href="https://walasek.github.io/node-modularity/">Documentation available here</a>.</p>
 <hr>
 <h2>Goal</h2>
 <p>I've seen way too many JavaScript applications which don't properly handle their system state. Are you also tired of database connections held in global variables and singletons with unknown lifecycle? This framework is for you!</p>
-<pre class="prettyprint source lang-javascript"><code>// Wrap your dependencies in modules
+<pre class="prettyprint source lang-javascript"><code>const { Module, SystemState } = require('node-modularity');
+
+// Wrap your dependencies in modules
 class DatabaseConnection extends Module {
   async setup(){
     this.db = await connectToMyDb();
@@ -88,12 +91,16 @@ class RESTEndpoints extends Module {
         this.webserver = request(WebServer)
       }
     });
+    // Dependencies are NOT available in the constructor
+    this.database; // undefined
   }
 
   // Magically this will be called after the dependencies are ready!
   // No more lifecycle management!
   async setup(){
-    this.webserver.app.get('/', (req, res) => res.send('Hello world!'));
+    this.webserver.app.get('/', (req, res) =>
+      res.json(`Hello mr ${this.database.getUserData()}`)
+    );
   }
 }
 
@@ -115,9 +122,18 @@ const state = system.bootstrap({
 await system.setup();
 state.myRestEndpoints.webserver.app.listen(80);
 // ...
-// You can also define teardown methods to close the system in the proper order!
+// You can also define teardown methods and close the system in the proper order!
 await system.teardown();
 </code></pre>
+<p>Features and remarks:</p>
+<ul>
+<li>Modules can optionally be <em>exclusive</em> meaning that a new instance is constructed for each injection. These exclusive modules can later depend on non-exclusive modules. Such a case will properly be handled creating a sort of a diamond dependency shape.</li>
+<li>Modules can be referenced by an alias. Got a logger module that prints to console and another one that prints nothing, both with different classnames? Just register one with an alias! You can also use aliases when requesting modules for injection.</li>
+<li>Currently the dependency graph cannot have cycles (A-&gt;B-&gt;C-&gt;A). In the future this will be handled by being able to declare one of the dependencies as <em>optional during setup</em>.</li>
+<li>Currently the modules can only be created using a no-argument <em>new</em> call. In the future it will be possible to define a default factory function and to require exclusive modules with custom arguments per injection.</li>
+<li>It is possible to avoid <code>addModuleClass</code> calls at all. An option might be added to enable <em>registering-during-injection</em> if a class is provided.</li>
+<li>I might provide some extra modules that wrap some popular libraries such as Express or Mongo. This would enable instant prototyping of some simple web apps with this framework.</li>
+</ul>
 <h2>Installation</h2>
 <p>Node <code>&gt;=8</code> is required.</p>
 <pre class="prettyprint source lang-bash"><code>npm install --save node-modularity
@@ -159,7 +175,7 @@ npm t
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Wed Jul 29 2020 17:59:02 GMT+0200 (Central European Summer Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Wed Jul 29 2020 18:56:34 GMT+0200 (Central European Summer Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
