@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>SystemState.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Module.html">Module</a><ul class='methods'><li data-type='method'><a href="Module.html#moduleIsExclusive">moduleIsExclusive</a></li><li data-type='method'><a href="Module.html#modulePerformInjection">modulePerformInjection</a></li><li data-type='method'><a href="Module.html#setup">setup</a></li><li data-type='method'><a href="Module.html#teardown">teardown</a></li></ul></li><li><a href="SystemState.html">SystemState</a><ul class='methods'><li data-type='method'><a href="SystemState.html#addModuleClass">addModuleClass</a></li><li data-type='method'><a href="SystemState.html#bootstrap">bootstrap</a></li><li data-type='method'><a href="SystemState.html#resolveClass">resolveClass</a></li><li data-type='method'><a href="SystemState.html#setup">setup</a></li><li data-type='method'><a href="SystemState.html#teardown">teardown</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">SystemState.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const debug = require('debug')('modularity');
+const Module = require('./Module');
+
+/**
+ * A container for modules. Holds system state. It's a module itself.
+ */
+class SystemState extends Module {
+	constructor() {
+		super();
+		this.knownClasses = {};
+		this.setupQueue = [];
+	}
+
+	/**
+	 * Add a module to the known classes library.
+	 * @param classObject The class
+	 * @param [overrideName] Class name override if encountering issues with transpiled solutions.
+	 */
+	addModuleClass(classObject, overrideName = null) {
+		this.knownClasses[overrideName || classObject.name] = classObject;
+	}
+
+	/**
+	 * Prepare module instances but don't initialize them.
+	 */
+	bootstrap(requirements) {
+		debug('Bootstrapping system');
+		const result = {};
+		const createdNonExclusiveObjects = [];
+		const setupQueue = [];
+		const ops = Object.keys(requirements).map(prop => ['resolve', requirements[prop], prop]);
+
+		while (ops.length > 0) {
+			const [op, ...args] = ops.shift();
+
+			switch (op) {
+				case 'resolve':
+					debug('Resolving bootstrap subject ' + args[1]);
+					const instance = this.constructModule(args[0]);
+
+					if (!instance.moduleIsExclusive()) {
+						createdNonExclusiveObjects.push(instance);
+					}
+
+					result[args[1]] = instance;
+					setupQueue.push(instance);
+					ops.push(['inject', instance]);
+					break;
+				case 'inject':
+					// TODO: Ability to request unique?
+					const dependencies = [];
+					const requestFn = nameOrClassObject => {
+						// Must return an instance
+						// Check if already have an instance
+						const ResolvedClass = this.resolveClass(nameOrClassObject);
+
+						debug(`Requested an instance of ${ResolvedClass.name}`);
+						const existing = createdNonExclusiveObjects.find(obj => obj instanceof ResolvedClass);
+
+						if (existing &amp;&amp; !existing.moduleIsExclusive()) {
+							debug(`Requested instance is already built and non-exclusive`);
+							dependencies.push(existing);
+							return existing;
+						}
+
+						// Build
+						const created = this.constructModule(ResolvedClass);
+
+						if (created.moduleIsExclusive()) {
+							debug(`Created instance of ${ResolvedClass.name} is exclusive and will not be reused`);
+						} else {
+							createdNonExclusiveObjects.push(created);
+						}
+						setupQueue.push(created);
+
+						ops.push(['inject', created]);
+						dependencies.push(created);
+						return created;
+					};
+
+					args[0].modulePerformInjection(requestFn);
+					args[0].hintModuleDependencies(dependencies);
+					break;
+				default:
+					throw Error('Internal error - unknown op: ' + op);
+			}
+		}
+		debug('Done Bootstrapping, ready to set up');
+		this.setupQueue = setupQueue;
+		this.invertSetupModulesList();
+		return result;
+	}
+
+	constructModule(nameOrClassObject) {
+		const ResolvedClass = this.resolveClass(nameOrClassObject);
+
+		debug(`Attempting construction of class ${ResolvedClass.name}`);
+		return new ResolvedClass();
+	}
+
+	/**
+	 * Return the class of a given name. If the argument is already a class then return it.
+	 * @param {*} nameOrClassObject
+	 */
+	resolveClass(nameOrClassObject) {
+		if (nameOrClassObject instanceof Object) {
+			// Must check if we know it
+			if (!Object.values(this.knownClasses).find(obj => obj.name === nameOrClassObject.name)) {
+				throw Error('Attempted to resolve an unknown class ' + nameOrClassObject.name);
+			}
+			return nameOrClassObject;
+		} else if (typeof nameOrClassObject === 'string') {
+			const translated = this.knownClasses[nameOrClassObject];
+
+			if (translated) {
+				return translated;
+			}
+			throw Error('Unable to resolve class ' + nameOrClassObject);
+		} else {
+			throw Error('Unable to resolve class of a name that is not a string');
+		}
+	}
+
+	/**
+	 * Setup bootstrapped modules.
+	 */
+	async setup() {
+		for (const mod of this.setupQueue) {
+			debug('Setup of module ' + mod.constructor.name);
+			mod.assertDependenciesSetup();
+			await mod.setup();
+		}
+	}
+
+	/**
+	 * Teardown all modules.
+	 */
+	async teardown() {
+		this.invertSetupModulesList();
+		for (const mod of this.setupQueue) {
+			debug('Teardown of module ' + mod.constructor.name);
+			await mod.teardown();
+		}
+	}
+
+	invertSetupModulesList() {
+		this.setupQueue = this.setupQueue.map((_, i, self) => self[self.length - i - 1]); // Invert
+	}
+}
+
+module.exports = SystemState;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Wed Jul 29 2020 17:21:52 GMT+0200 (Central European Summer Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
