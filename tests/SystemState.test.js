@@ -34,5 +34,18 @@ module.exports = async function (test) {
 				t.throws(() => system.resolveClass('SomeModule'), /SomeModule/);
 			});
 		});
+
+		t.test('Bootstrap with an array', t => {
+			class SomeModule extends Module {}
+			class AnotherModule extends Module {}
+
+			system.addModuleClass(SomeModule);
+			system.addModuleClass(AnotherModule);
+
+			const [a, b] = system.bootstrap([SomeModule, AnotherModule]);
+
+			t.ok(a instanceof SomeModule);
+			t.ok(b instanceof AnotherModule);
+		});
 	});
 };

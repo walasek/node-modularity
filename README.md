@@ -30,7 +30,7 @@ class WebServer extends Module {
   }
 }
 
-// Define your own implementation as modules
+// Define your own logic as modules too
 class RESTEndpoints extends Module {
   constructor(){
     super({
@@ -63,13 +63,14 @@ system.addModuleClass(SomeUnrelatedModule);
 
 // Bootstrap will only construct these modules and their dependencies
 // SomeUnrelatedModule will not be constructed even if it's registered
-const state = system.bootstrap({
+const modules = system.bootstrap({
   myRestEndpoints: RESTEndpoints
 });
+// const [myRestEndpoints] = system.bootstrap([RESTEndpoints]); would work too
 
 // Setup will resolve your dependency graph in the right order
 await system.setup();
-state.myRestEndpoints.webserver.app.listen(80);
+modules.myRestEndpoints.webserver.app.listen(80);
 // ...
 // You can also define teardown methods and close the system in the proper order!
 await system.teardown();
@@ -81,7 +82,7 @@ Features and remarks:
 - Modules can be referenced by an alias. Got a logger module that prints to console and another one that prints nothing, both with different classnames? Just register one with an alias! You can also use aliases when requesting modules for injection.
 - Currently the dependency graph cannot have cycles (A->B->C->A). In the future this will be handled by being able to declare one of the dependencies as _optional during setup_.
 - Currently the modules can only be created using a no-argument _new_ call. In the future it will be possible to define a default factory function and to require exclusive modules with custom arguments per injection.
-- It is possible to avoid `addModuleClass` calls at all. An option might be added to enable _registering-during-injection_ if a class is provided.
+- It is possible to avoid `addModuleClass` calls at all. An option might be added to enable _registering-during-injection_ if a class is provided. This does introduce risk of injecting a wrong class if the name is popular (Logger etc.).
 - I might provide some extra modules that wrap some popular libraries such as Express or Mongo. This would enable instant prototyping of some simple web apps with this framework.
 
 ## Installation
