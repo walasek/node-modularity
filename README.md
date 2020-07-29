@@ -10,6 +10,63 @@ An easy dependency injection framework for any JavaScript application.
 
 I've seen way too many JavaScript applications which don't properly handle their system state. Are you also tired of database connections held in global variables and singletons with unknown lifecycle? This framework is for you!
 
+```javascript
+// Wrap your dependencies in modules
+class DatabaseConnection extends Module {
+  async setup(){
+    this.db = await connectToMyDb();
+    // ...
+  }
+}
+
+class WebServer extends Module {
+  async setup(){
+    this.app = express();
+    // ...
+  }
+}
+
+// Define your own implementation as modules
+class RESTEndpoints extends Module {
+  constructor(){
+    super({
+      // Declare your dependencies
+      inject: request => {
+        this.database = request(DatabaseConnection),
+        this.webserver = request(WebServer)
+      }
+    });
+  }
+
+  // Magically this will be called after the dependencies are ready!
+  // No more lifecycle management!
+  async setup(){
+    this.webserver.app.get('/', (req, res) => res.send('Hello world!'));
+  }
+}
+
+// The system object will hold our state, no globals!
+const system = new SystemState();
+// Register known modules to be able to construct and inject them
+system.addModuleClass(WebServer);
+system.addModuleClass(DatabaseConnection);
+system.addModuleClass(RESTEndpoints);
+system.addModuleClass(SomeUnrelatedModule);
+
+// Bootstrap will only construct these modules and their dependencies
+// SomeUnrelatedModule will not be constructed even if it's registered
+const state = system.bootstrap({
+  myRestEndpoints: RESTEndpoints
+});
+
+// Setup will resolve your dependency graph in the right order
+await system.setup();
+state.myRestEndpoints.webserver.app.listen(80);
+// ...
+// You can also define teardown methods to close the system in the proper order!
+await system.teardown();
+```
+
 ## Installation
 
 Node `>=8` is required.
