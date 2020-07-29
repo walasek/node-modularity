@@ -6,6 +6,10 @@ An easy dependency injection framework for any JavaScript application.
 
 [Documentation available here](https://walasek.github.io/node-modularity/).
 
+```bash
+npm install --save node-modularity
+```
+
 ---
 
 ## Goal
@@ -91,14 +95,6 @@ Node `>=8` is required.
 
 ```bash
 npm install --save node-modularity
-```
-
-To perform tests use:
-
-```bash
-cd node_modules/node-modularity
-npm i
-npm t
 ```
 
 ## Usage

@@ -1,7 +1,7 @@
 const { SystemState, Module } = require('..');
 
 module.exports = async function (test) {
-	await test('SystemState', t => {
+	await test('SystemState', async t => {
 		const system = new SystemState();
 
 		t.test('Class resolving', t => {
@@ -46,6 +46,22 @@ module.exports = async function (test) {
 
 			t.ok(a instanceof SomeModule);
 			t.ok(b instanceof AnotherModule);
+		});
+
+		await t.test('Guards proper super.setup', async t => {
+			class SomeInvalidModule extends Module {
+				setup() {} // missing super
+			}
+
+			system.addModuleClass(SomeInvalidModule);
+			system.bootstrap([SomeInvalidModule]);
+
+			try {
+				await system.setup();
+				t.fail('Should have thrown');
+			} catch (err) {
+				t.ok(err.message.indexOf('super.setup') !== -1);
+			}
 		});
 	});
 };

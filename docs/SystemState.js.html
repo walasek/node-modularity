@@ -27,7 +27,7 @@
 
 <nav >
     
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Module.html">Module</a><ul class='methods'><li data-type='method'><a href="Module.html#moduleIsExclusive">moduleIsExclusive</a></li><li data-type='method'><a href="Module.html#modulePerformInjection">modulePerformInjection</a></li><li data-type='method'><a href="Module.html#setup">setup</a></li><li data-type='method'><a href="Module.html#teardown">teardown</a></li></ul></li><li><a href="SystemState.html">SystemState</a><ul class='methods'><li data-type='method'><a href="SystemState.html#addModuleClass">addModuleClass</a></li><li data-type='method'><a href="SystemState.html#bootstrap">bootstrap</a></li><li data-type='method'><a href="SystemState.html#resolveClass">resolveClass</a></li><li data-type='method'><a href="SystemState.html#setup">setup</a></li><li data-type='method'><a href="SystemState.html#teardown">teardown</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Module.html">Module</a><ul class='methods'><li data-type='method'><a href="Module.html#moduleIsExclusive">moduleIsExclusive</a></li><li data-type='method'><a href="Module.html#modulePerformInjection">modulePerformInjection</a></li><li data-type='method'><a href="Module.html#moduleWasSetUp">moduleWasSetUp</a></li><li data-type='method'><a href="Module.html#setup">setup</a></li><li data-type='method'><a href="Module.html#teardown">teardown</a></li></ul></li><li><a href="SystemState.html">SystemState</a><ul class='methods'><li data-type='method'><a href="SystemState.html#addModuleClass">addModuleClass</a></li><li data-type='method'><a href="SystemState.html#bootstrap">bootstrap</a></li><li data-type='method'><a href="SystemState.html#resolveClass">resolveClass</a></li><li data-type='method'><a href="SystemState.html#setup">setup</a></li><li data-type='method'><a href="SystemState.html#teardown">teardown</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -152,7 +152,7 @@ class SystemState extends Module {
 	resolveClass(nameOrClassObject) {
 		if (typeof nameOrClassObject === 'function') {
 			// Must check if we know it
-			if (!Object.values(this.knownClasses).find(obj => obj.name === nameOrClassObject.name)) {
+			if (!Object.values(this.knownClasses).find(obj => obj === nameOrClassObject)) {
 				throw Error('Attempted to resolve an unknown class ' + nameOrClassObject.name);
 			}
 			return nameOrClassObject;
@@ -186,6 +186,12 @@ class SystemState extends Module {
 					continue;
 				}
 				await mod.setup();
+				if (!mod.moduleWasSetUp()) {
+					throw Error(
+						`Module ${mod.constructor.name} does not properly implement the setup method. ` +
+							`Make sure you're calling super.setup()`
+					);
+				}
 			}
 
 			if (newLeftovers.length >= leftovers.length) {
