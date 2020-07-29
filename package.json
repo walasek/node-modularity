@@ -1,0 +1,56 @@
+{
+  "name": "node-modularity",
+  "version": "0.1.0",
+  "description": "A framework for modular JavaScript solutions.",
+  "engines": {
+    "node": ">=8"
+  },
+  "files": [
+    "lib/**/*.js",
+    "index.js"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "coverage": "nyc --reporter=lcov --reporter=text-summary node test.js",
+    "test": "node test.js | node node_modules/faucet/bin/cmd",
+    "watch:test": "nodemon --exec npm run test",
+    "watch:coverage": "nodemon --exec npm run coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
+  },
+  "respository": {
+    "type": "git",
+    "url": "git+https://github.com/walasek/node-modularity.git"
+  },
+  "keywords": [
+    "nodejs",
+    "framework",
+    "modules"
+  ],
+  "author": "Karol Walasek <karol@walasek.ovh>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/walasek/node-modularity/issues"
+  },
+  "homepage": "https://github.com/walasek/node-modularity#readme",
+  "dependencies": {
+    "debug": "4.1.1"
+  },
+  "devDependencies": {
+    "docdash": "1.2.0",
+    "eslint": "7.5.0",
+    "eslint-config-prettier": "6.11.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-prettier": "3.1.4",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-security": "1.4.0",
+    "faucet": "0.0.1",
+    "glob": "7.1.6",
+    "jsdoc": "3.6.5",
+    "nodemon": "2.0.4",
+    "nyc": "^15.1.0",
+    "prettier": "2.0.5",
+    "sinon": "^9.0.2",
+    "zora": "4.0.0"
+  }
+}
