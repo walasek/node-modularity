@@ -16,7 +16,8 @@
     "watch:test": "nodemon --exec npm run test",
     "watch:coverage": "nodemon --exec npm run coverage",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "docs": "node node_modules/jsdoc/jsdoc.js -c jsdoc.json"
   },
   "respository": {
     "type": "git",
