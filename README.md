@@ -85,12 +85,14 @@ await system.teardown();
 
 Features and remarks:
 
-- Modules can optionally be _exclusive_ meaning that a new instance is constructed for each injection. These exclusive modules can later depend on non-exclusive modules. Such a case will properly be handled creating a sort of a diamond dependency shape.
+- Modules will be reused by default, so if you declare 5 modules that depend on another module then 6 modules will be constructed in total.
+  - Modules can optionally be _exclusive_ meaning that a new instance is constructed for each injection. These exclusive modules can later depend on non-exclusive modules. Such a case will properly be handled creating a sort of a diamond dependency shape. A practical example would be when a module wants two different caches, and those caches depend on a single Redis connection.
 - Modules can be referenced by an alias. Got a logger module that prints to console and another one that prints nothing, both with different classnames? Just register one with an alias! You can also use aliases when requesting modules for injection.
 - Currently the dependency graph cannot have cycles (A->B->C->A). In the future this will be handled by being able to declare one of the dependencies as _optional during setup_.
 - Currently the modules can only be created using a no-argument _new_ call. In the future it will be possible to define a default factory function and to require exclusive modules with custom arguments per injection.
-- It is possible to avoid `addModuleClass` calls at all. An option might be added to enable _registering-during-injection_ if a class is provided. This does introduce risk of injecting a wrong class if the name is popular (Logger etc.).
+- It is possible to avoid `addModuleClass` calls at all. An option might be added to enable _registering-during-injection_ if a class is provided.
 - I might provide some extra modules that wrap some popular libraries such as Express or Mongo. This would enable instant prototyping of some simple web apps with this framework.
+- Interaction with transpilers (Babel, TypeScript) and bundlers (Browserify, Webpack) is not tested at this moment. They are known to modify class names and might break some internal mechanisms of this library.
 
 ## Installation
 
