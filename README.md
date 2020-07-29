@@ -11,6 +11,8 @@ An easy dependency injection framework for any JavaScript application.
 I've seen way too many JavaScript applications which don't properly handle their system state. Are you also tired of database connections held in global variables and singletons with unknown lifecycle? This framework is for you!
 
 ```javascript
+const { Module, SystemState } = require('node-modularity');
+
 // Wrap your dependencies in modules
 class DatabaseConnection extends Module {
   async setup(){
@@ -41,7 +43,9 @@ class RESTEndpoints extends Module {
   // Magically this will be called after the dependencies are ready!
   // No more lifecycle management!
   async setup(){
-    this.webserver.app.get('/', (req, res) => res.send('Hello world!'));
+    this.webserver.app.get('/', (req, res) =>
+      res.json(`Hello mr ${this.database.getUserData()}`)
+    );
   }
 }
 
@@ -63,7 +67,7 @@ const state = system.bootstrap({
 await system.setup();
 state.myRestEndpoints.webserver.app.listen(80);
 // ...
-// You can also define teardown methods to close the system in the proper order!
+// You can also define teardown methods and close the system in the proper order!
 await system.teardown();
 ```
 
