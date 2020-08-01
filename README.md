@@ -23,6 +23,7 @@ const { Module, SystemState } = require('node-modularity');
 class DatabaseConnection extends Module {
   async setup(){
     super.setup(); // Make sure to pass the call into Module
+
     this.db = await connectToMyDb();
     // ...
   }
@@ -31,6 +32,7 @@ class DatabaseConnection extends Module {
 class WebServer extends Module {
   async setup(){
     super.setup();
+
     this.app = express();
     // ...
   }
@@ -46,14 +48,13 @@ class RESTEndpoints extends Module {
         this.webserver = request(WebServer)
       }
     });
-    // Dependencies are NOT available in the constructor
-    this.database; // undefined
   }
 
   // Magically this will be called after the dependencies are ready!
   // No more lifecycle management!
   async setup(){
     super.setup();
+
     this.webserver.app.get('/', (req, res) =>
       res.json(`Hello mr ${this.database.getUserData()}`)
     );
