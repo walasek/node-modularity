@@ -17,24 +17,19 @@ npm install --save node-modularity
 I've seen way too many JavaScript applications which don't properly handle their system state. Are you also tired of database connections held in global variables and singletons with unknown lifecycle? This framework is for you!
 
 ```javascript
+// Simplified example, see below for usage
 const { Module, SystemState } = require('node-modularity');
 
 // Wrap your dependencies in modules
 class DatabaseConnection extends Module {
   async setup(){
-    super.setup(); // Make sure to pass the call into Module
-
     this.db = await connectToMyDb();
-    // ...
   }
 }
 
 class WebServer extends Module {
   async setup(){
-    super.setup();
-
     this.app = express();
-    // ...
   }
 }
 
@@ -53,8 +48,6 @@ class RESTEndpoints extends Module {
   // Magically this will be called after the dependencies are ready!
   // No more lifecycle management!
   async setup(){
-    super.setup();
-
     this.webserver.app.get('/', (req, res) =>
       res.json(`Hello mr ${this.database.getUserData()}`)
     );
@@ -74,7 +67,6 @@ system.addModuleClass(SomeUnrelatedModule);
 const modules = system.bootstrap({
   myRestEndpoints: RESTEndpoints
 });
-// const [myRestEndpoints] = system.bootstrap([RESTEndpoints]); would work too
 
 // Setup will resolve your dependency graph in the right order
 await system.setup();
@@ -84,7 +76,7 @@ modules.myRestEndpoints.webserver.app.listen(80);
 await system.teardown();
 ```
 
-Features and remarks:
+## Features and remarks
 
 - Modules will be reused by default, so if you declare 5 modules that depend on another module then 6 modules will be constructed in total.
   - Modules can optionally be _exclusive_ meaning that a new instance is constructed for each injection. These exclusive modules can later depend on non-exclusive modules. Such a case will properly be handled creating a sort of a diamond dependency shape. A practical example would be when a module wants two different caches, and those caches depend on a single Redis connection.
@@ -95,19 +87,65 @@ Features and remarks:
 - I might provide some extra modules that wrap some popular libraries such as Express or Mongo. This would enable instant prototyping of some simple web apps with this framework.
 - Interaction with transpilers (Babel, TypeScript) and bundlers (Browserify, Webpack) is not tested at this moment. They are known to modify class names and might break some internal mechanisms of this library.
 
-## Installation
-
-Node `>=8` is required.
-
-```bash
-npm install --save node-modularity
-```
-
 ## Usage
 
 Beware this project is still in development. There may be serious bugs or performance issues over time.
 
 Documentation is available [here](https://walasek.github.io/node-modularity/).
+
+In general - you will define classes that will extend the `Module` class provided by this library. Those classes will then have their `setup` called in the right order by using a `SystemState` instance. It is also possible to `teardown` modules in the reverse order allowing a safe application closure.
+
+Instead of providing a list of dependencies - you'll provide a function that will request other modules in an interactive matter.
+
+```javascript
+class MyModule extends Module {
+  constructor(){
+    super({
+      inject: request => {
+        // This is how you define dependencies
+        this.otherModule = request(OtherModule);
+        // You can also use an alias
+        this.otherModule = request('OtherModule');
+      },
+      // This will cause a unique instance to be constructed
+      // for each request(MyModule)
+      exclusive: true,
+    })
+  }
+}
+```
+
+To be able to bootstrap a bunch of modules together you'll need a `SystemState` instance which will hold information on the _system_ created.
+
+```javascript
+const system = new SystemState();
+
+// Add known modules to allow automatic construction
+// This also registers an alias using the class's name
+system.addModuleClass(OtherModule);
+
+// To be sure your classes work properly when transpiling
+// make sure to declare an alias.
+system.addModuleClass(MyModule, 'MyModule');
+
+// This will create the module instances and inject references
+const state = system.bootstrap({ myModule: MyModule });
+state.myModule; // MyModule instance
+// An array form is also available
+// const [ myModule ] = system.bootstrap([ MyModule ]);
+// Aliases can also be used
+// Throws if any issues occur
+
+// This will call all module's setup() in the right order
+await system.setup();
+// Throws if any issues occur
+
+// ... perform post-setup things here
+
+// This will call teardowns in the right order (reverse)
+await system.teardown();
+// Throws if any issues occur
+```
 
 ## Contributing
 
