@@ -1,4 +1,5 @@
 const { SystemState, Module } = require('..');
+const sinon = require('sinon');
 
 module.exports = async function (test) {
 	await test('SystemState', async t => {
@@ -62,6 +63,35 @@ module.exports = async function (test) {
 			} catch (err) {
 				t.ok(err.message.indexOf('super.setup') !== -1);
 			}
+		});
+
+		await t.test('Guards deferred bootstrap injections', async t => {
+			let done;
+			const p = new Promise(res => {
+				done = sinon.stub().callsFake(() => res());
+			});
+
+			class SomeInvalidBootstrapModule extends Module {
+				constructor() {
+					super({
+						inject: request => {
+							setTimeout(() => {
+								try {
+									this.a = request('Something');
+								} catch (err) {
+									done(err);
+								}
+							}, 10);
+						},
+					});
+				}
+			}
+
+			system.addModuleClass(SomeInvalidBootstrapModule);
+			system.bootstrap([SomeInvalidBootstrapModule]);
+			await p;
+			t.is(done.callCount, 1);
+			t.ok(done.firstCall.args, ['Invalid injection request call. Bootstrap was finished.']);
 		});
 	});
 };
