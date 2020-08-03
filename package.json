@@ -17,6 +17,7 @@
     "watch:coverage": "nodemon --exec npm run coverage",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
+    "check-dts": "tsc --noEmit index.d.ts && tsc --noEmit tests/typescript/test.ts",
     "docs": "node node_modules/jsdoc/jsdoc.js -c jsdoc.json"
   },
   "respository": {
@@ -49,9 +50,10 @@
     "glob": "7.1.6",
     "jsdoc": "3.6.5",
     "nodemon": "2.0.4",
-    "nyc": "^15.1.0",
+    "nyc": "15.1.0",
     "prettier": "2.0.5",
-    "sinon": "^9.0.2",
+    "sinon": "9.0.2",
+    "typescript": "3.9.7",
     "zora": "4.0.0"
   }
 }

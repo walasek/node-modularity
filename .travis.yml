@@ -9,7 +9,10 @@ node_js:
   - "14"
 
 script:
+  - npm run lint
+  - npm run check-dts
   - npm run coverage
+  - npm run docs
 
 after_script:
   - if [[ `node --version` == *12* ]]; then codecov; fi
