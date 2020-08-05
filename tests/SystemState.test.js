@@ -49,6 +49,67 @@ module.exports = async function (test) {
 			t.ok(b instanceof AnotherModule);
 		});
 
+		await t.test('Multi bootstrap and setup support', async t => {
+			const aConstructs = sinon.spy();
+
+			class ModuleA extends Module {
+				constructor() {
+					super();
+					aConstructs();
+				}
+			}
+			class ModuleB extends Module {
+				constructor() {
+					super({
+						inject: request => {
+							this.a = request(ModuleA);
+						},
+					});
+				}
+			}
+
+			system.addModuleClass(ModuleA);
+			system.addModuleClass(ModuleB);
+
+			const [a, b] = system.bootstrap([ModuleA, ModuleB]);
+
+			sinon.spy(a, 'setup');
+			sinon.spy(b, 'setup');
+
+			await system.setup();
+
+			t.is(a.setup.callCount, 1);
+			t.is(b.setup.callCount, 1);
+			t.is(aConstructs.callCount, 1);
+
+			const [b2] = system.bootstrap([ModuleB]);
+
+			sinon.spy(b2, 'setup');
+
+			await system.setup();
+
+			t.is(a.setup.callCount, 1);
+			t.is(aConstructs.callCount, 1, 'A dependent module should not be constructed since its already made');
+			t.is(b.setup.callCount, 1);
+			t.is(b2.setup.callCount, 1);
+
+			t.ok(b2 instanceof ModuleB);
+			t.ok(b2 != b);
+			t.is(b2.a, a);
+
+			sinon.spy(a, 'teardown');
+			sinon.spy(b, 'teardown');
+			sinon.spy(b2, 'teardown');
+
+			await system.teardown();
+
+			t.is(a.teardown.callCount, 1);
+			t.is(b.teardown.callCount, 1);
+			t.is(b2.teardown.callCount, 1);
+			t.ok(b2.teardown.calledBefore(b));
+			t.ok(b.teardown.calledBefore(a));
+		});
+
 		await t.test('Guards proper super.setup', async t => {
 			class SomeInvalidModule extends Module {
 				setup() {} // missing super
