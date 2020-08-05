@@ -148,6 +148,25 @@ await system.teardown();
 // Throws if any issues occur
 ```
 
+### Graceful teardown
+
+With this library you won't have to think about proper teardown procedure. Chances are you don't even handle app closure at all. This solution will scale all the way with your app.
+
+```javascript
+// SIGHUP, SIGINT, SIGTERM
+[1, 2, 15].forEach(id => {
+  process.on(id, async () => {
+    try {
+      await system.teardown();
+      process.exit(0);
+    } catch(err) {
+      console.err(err);
+      process.exit(1);
+    }
+  });
+});
+```
+
 ## Contributing
 
 The source is documented with JSDoc. To generate the documentation use:
