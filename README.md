@@ -155,7 +155,7 @@ With this library you won't have to think about proper teardown procedure. Chanc
 
 ```javascript
 // SIGHUP, SIGINT, SIGTERM
-[1, 2, 15].forEach(id => {
+['SIGHUP', 'SIGINT', 'SIGTERM'].forEach(id => {
   process.on(id, async () => {
     try {
       await system.teardown();
