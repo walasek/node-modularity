@@ -154,5 +154,17 @@ module.exports = async function (test) {
 			t.is(done.callCount, 1);
 			t.ok(done.firstCall.args, ['Invalid injection request call. Bootstrap was finished.']);
 		});
+
+		t.test('Module registration', t => {
+			t.test('Cannot register the same classname twice', t => {
+				class SomeModuleOnceAgain extends Module {}
+
+				const a = SomeModuleOnceAgain;
+				const b = SomeModuleOnceAgain;
+
+				system.addModuleClass(a);
+				t.throws(() => system.addModuleClass(b));
+			});
+		});
 	});
 };
