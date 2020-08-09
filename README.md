@@ -154,7 +154,6 @@ await system.teardown();
 With this library you won't have to think about proper teardown procedure. Chances are you don't even handle app closure at all. This solution will scale all the way with your app.
 
 ```javascript
-// SIGHUP, SIGINT, SIGTERM
 ['SIGHUP', 'SIGINT', 'SIGTERM'].forEach(id => {
   process.on(id, async () => {
     try {

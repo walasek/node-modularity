@@ -17,7 +17,6 @@ export class Module {
 	moduleIsExclusive(): boolean;
 	moduleWasSetUp(): boolean;
 	modulePerformInjection(requestFn: ModuleInjectionHandler): void;
-	hintModuleDependencies(list: Module[]): void;
 	assertDependenciesSetup(): void;
 }
 
