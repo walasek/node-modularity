@@ -2,7 +2,7 @@ export type ModuleClass = ClassOf<Module>;
 export type ClassOf<T> = new () => T;
 export type ClassOrName<T> = ClassOf<T> | string;
 export type ModuleRequestFunction = <T extends Module>(classOrName: ClassOrName<T>) => T;
-export type ModuleInjectionHandler = (request: ModuleRequestFunction) => void;
+export type ModuleInjectionHandler = (request: ModuleRequestFunction, requestOptional?: ModuleRequestFunction) => void;
 
 export interface ModuleConstructorOptions {
 	exclusive?: boolean;
@@ -16,7 +16,7 @@ export class Module {
 	teardown(): void;
 	moduleIsExclusive(): boolean;
 	moduleWasSetUp(): boolean;
-	modulePerformInjection(requestFn: ModuleInjectionHandler): void;
+	modulePerformInjection(requestFn: ModuleRequestFunction): void;
 	assertDependenciesSetup(): void;
 }
 

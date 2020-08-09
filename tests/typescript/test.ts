@@ -6,12 +6,14 @@ class SomeMod extends Module {
 	public a;
 	public b;
 	public c;
+	public d;
 
 	constructor(){
 		super({
-			inject: (request) => {
+			inject: (request, requestOptional) => {
 				this.b = request(OtherMod);
 				this.c = request('abc');
+				this.d = requestOptional(OtherMod);
 			}
 		});
 	}

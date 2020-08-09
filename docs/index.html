@@ -66,22 +66,19 @@
 <hr>
 <h2>Goal</h2>
 <p>I've seen way too many JavaScript applications which don't properly handle their system state. Are you also tired of database connections held in global variables and singletons with unknown lifecycle? This framework is for you!</p>
-<pre class="prettyprint source lang-javascript"><code>const { Module, SystemState } = require('node-modularity');
+<pre class="prettyprint source lang-javascript"><code>// Simplified example, see below for usage
+const { Module, SystemState } = require('node-modularity');
 
 // Wrap your dependencies in modules
 class DatabaseConnection extends Module {
   async setup(){
-    super.setup(); // Make sure to pass the call into Module
     this.db = await connectToMyDb();
-    // ...
   }
 }
 
 class WebServer extends Module {
   async setup(){
-    super.setup();
     this.app = express();
-    // ...
   }
 }
 
@@ -95,14 +92,11 @@ class RESTEndpoints extends Module {
         this.webserver = request(WebServer)
       }
     });
-    // Dependencies are NOT available in the constructor
-    this.database; // undefined
   }
 
   // Magically this will be called after the dependencies are ready!
   // No more lifecycle management!
   async setup(){
-    super.setup();
     this.webserver.app.get('/', (req, res) =>
       res.json(`Hello mr ${this.database.getUserData()}`)
     );
@@ -122,7 +116,6 @@ system.addModuleClass(SomeUnrelatedModule);
 const modules = system.bootstrap({
   myRestEndpoints: RESTEndpoints
 });
-// const [myRestEndpoints] = system.bootstrap([RESTEndpoints]); would work too
 
 // Setup will resolve your dependency graph in the right order
 await system.setup();
@@ -131,22 +124,109 @@ modules.myRestEndpoints.webserver.app.listen(80);
 // You can also define teardown methods and close the system in the proper order!
 await system.teardown();
 </code></pre>
-<p>Features and remarks:</p>
+<h2>Features and remarks</h2>
 <ul>
-<li>Modules can optionally be <em>exclusive</em> meaning that a new instance is constructed for each injection. These exclusive modules can later depend on non-exclusive modules. Such a case will properly be handled creating a sort of a diamond dependency shape.</li>
-<li>Modules can be referenced by an alias. Got a logger module that prints to console and another one that prints nothing, both with different classnames? Just register one with an alias! You can also use aliases when requesting modules for injection.</li>
-<li>Currently the dependency graph cannot have cycles (A-&gt;B-&gt;C-&gt;A). In the future this will be handled by being able to declare one of the dependencies as <em>optional during setup</em>.</li>
-<li>Currently the modules can only be created using a no-argument <em>new</em> call. In the future it will be possible to define a default factory function and to require exclusive modules with custom arguments per injection.</li>
-<li>It is possible to avoid <code>addModuleClass</code> calls at all. An option might be added to enable <em>registering-during-injection</em> if a class is provided. This does introduce risk of injecting a wrong class if the name is popular (Logger etc.).</li>
-<li>I might provide some extra modules that wrap some popular libraries such as Express or Mongo. This would enable instant prototyping of some simple web apps with this framework.</li>
+<li>Modules will be reused by default, so if you declare 5 modules that depend on another module then 6 modules will be constructed in total.
+<ul>
+<li>Modules can optionally be <em>exclusive</em> meaning that a new instance is constructed for each injection. These exclusive modules can later depend on non-exclusive modules. Such a case will properly be handled creating a sort of a diamond dependency shape. A practical example would be when a module wants two different caches, and those caches depend on a single Redis connection.</li>
 </ul>
-<h2>Installation</h2>
-<p>Node <code>&gt;=8</code> is required.</p>
-<pre class="prettyprint source lang-bash"><code>npm install --save node-modularity
-</code></pre>
+</li>
+<li>Modules can be referenced by an alias. Got a logger module that prints to console and another one that prints nothing, both with different classnames? Just register one with an alias! You can also use aliases when requesting modules for injection.</li>
+<li>Cyclic dependency graphs (A-&gt;B-&gt;C-&gt;A) are supported as long as one of the dependencies is marked as <em>optional</em>. In transpiled code you might have to use string aliases, otherwise you'll encounter undefined imports.</li>
+<li>Currently the modules can only be created using a no-argument <em>new</em> call. In the future it will be possible to define a default factory function and to require exclusive modules with custom arguments per injection.</li>
+<li>It is possible to avoid <code>addModuleClass</code> calls at all. An option might be added to enable <em>registering-during-injection</em> if a class is provided.</li>
+<li>I might provide some extra modules that wrap some popular libraries such as Express or Mongo. This would enable instant prototyping of some simple web apps with this framework.</li>
+<li>Interaction with transpilers (Babel, TypeScript) and bundlers (Browserify, Webpack) is not tested at this moment. They are known to modify class names and might break some internal mechanisms of this library.</li>
+<li>SystemState methods are secured with a semaphore. If your module somehow tries to call a setup while being in a setup phase then an error will be thrown. This is to ensure consistent operation.</li>
+<li>SystemState is a Module itself! You can take advantage of this and define very complex multi-domain applications that are separated from each other while you keep the ability to scale the project further easily.</li>
+</ul>
 <h2>Usage</h2>
 <p>Beware this project is still in development. There may be serious bugs or performance issues over time.</p>
 <p>Documentation is available <a href="https://walasek.github.io/node-modularity/">here</a>.</p>
+<p>In general - you will define classes that will extend the <code>Module</code> class provided by this library. Those classes will then have their <code>setup</code> called in the right order by using a <code>SystemState</code> instance. It is also possible to <code>teardown</code> modules in the reverse order allowing a safe application closure.</p>
+<p>Instead of providing a list of dependencies - you'll provide a function that will request other modules in an interactive matter.</p>
+<pre class="prettyprint source lang-javascript"><code>class MyModule extends Module {
+  constructor(){
+    super({
+      inject: (request, requestOptional) => {
+        // This is how you define dependencies
+        this.otherModule = request(OtherModule);
+        // You can also use an alias
+        this.otherModule = request('OtherModule');
+        // Optional dependencies are not guaranteed to be ready during this module's setup()
+        // This allows building cyclic dependency graphs.
+        // Note that cycles might hint a possible error in design.
+        this.otherModule = requestOptional(OtherModule);
+      },
+      // This will cause a unique instance to be constructed
+      // for each request(MyModule)
+      exclusive: true,
+    })
+  }
+
+  async setup() {
+    super.setup(); // Always call super.setup(), otherwise will throw during setup
+
+    // For optional dependencies use this to make sure the module is ready
+    // Note that this is not needed for regular dependencies injected with `request`
+    if(this.otherModule.moduleWasSetUp()) {
+      // ... safely use this.otherModule
+    }
+  }
+
+  async teardown() {
+    super.teardown(); // Make sure the internal state knows about this
+
+    // Cleanup connections, handles or other resources
+  }
+}
+</code></pre>
+<p>To be able to bootstrap a bunch of modules together you'll need a <code>SystemState</code> instance which will hold information on the <em>system</em> created.</p>
+<pre class="prettyprint source lang-javascript"><code>const system = new SystemState();
+
+// Add known modules to allow automatic construction
+// This also registers an alias using the class's name
+system.addModuleClass(OtherModule);
+
+// To be sure your classes work properly when transpiling
+// make sure to declare an alias.
+system.addModuleClass(MyModule, 'MyModule');
+
+// This will create the module instances and inject references
+const state = system.bootstrap({ myModule: MyModule });
+state.myModule; // MyModule instance
+// An array form is also available
+// const [ myModule ] = system.bootstrap([ MyModule ]);
+// Aliases can also be used
+// Throws if any issues occur
+
+// This will call all module's setup() in the right order
+await system.setup();
+// Throws if any issues occur
+
+// ... perform post-setup things here
+
+// This will call teardowns in the right order (reverse)
+await system.teardown();
+// Throws if any issues occur
+</code></pre>
+<h3>Graceful teardown</h3>
+<p>With this library you won't have to think about proper teardown procedure. Chances are you don't even handle app closure at all. This solution will scale all the way with your app.</p>
+<pre class="prettyprint source lang-javascript"><code>['SIGHUP', 'SIGINT', 'SIGTERM'].forEach(id => {
+  process.on(id, async () => {
+    try {
+      await system.teardown();
+      process.exit(0);
+    } catch(err) {
+      console.err(err);
+      process.exit(1);
+    }
+  });
+});
+</code></pre>
+<h3>Microservices</h3>
+<p>When your project is modular you can start thinking about microservices. With <em>Modularity</em> you're one step away from being able to control your modules easily. Just bootstrap what you need in separate containers - the library will take care of dependencies. If your module doesn't need a database connection or a distributed cache - it won't try to set it up.</p>
+<p>The problem of communicating separated microservices is left to you to solve. Will it be a module which will handle a Message Queue, or some RPC abstraction? Wrap your transport layer in a Module and inject it - only where needed!</p>
 <h2>Contributing</h2>
 <p>The source is documented with JSDoc. To generate the documentation use:</p>
 <pre class="prettyprint source lang-bash"><code>npm run docs

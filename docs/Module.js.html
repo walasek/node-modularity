@@ -53,7 +53,8 @@ class Module {
 				inject: null, // A function that requests remote dependencies
 				...options,
 				wasSetup: false, // Was setup() called on this module?
-				dependencies: [], // An array of dependencies requested by inject()
+				dependencies: [], // An array of required dependencies requested by inject()
+				optionalDependencies: [], // An array of optional dependencies requested by inject()
 			},
 		};
 	}
@@ -95,12 +96,26 @@ class Module {
 	 */
 	modulePerformInjection(requestFn) {
 		if (this._module.options.inject) {
-			this._module.options.inject(requestFn);
-		}
-	}
+			const dependencies = [],
+				optional = [];
 
-	hintModuleDependencies(list) {
-		this._module.options.dependencies = list;
+			this._module.options.inject(
+				(...args) => {
+					const mod = requestFn(...args);
+
+					dependencies.push(mod);
+					return mod;
+				},
+				(...args) => {
+					const mod = requestFn(...args);
+
+					optional.push(mod);
+					return mod;
+				}
+			);
+			this._module.options.dependencies = dependencies;
+			this._module.options.optionalDependencies = optional;
+		}
 	}
 
 	assertDependenciesSetup() {
