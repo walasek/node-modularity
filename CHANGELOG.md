@@ -4,7 +4,9 @@ This document provides a log of changes. It is currently maintained by hand.
 
 ## (master)
 
-Usability:
+- Fixed index.d.ts declarations missing from the published package...
+
+## v0.2
 
 - Added index.d.ts declarations.
 - Introduced support for circular dependency graphs through optional dependencies.

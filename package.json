@@ -7,7 +7,8 @@
   },
   "files": [
     "lib/**/*.js",
-    "index.js"
+    "index.js",
+    "index.d.ts"
   ],
   "main": "index.js",
   "scripts": {
