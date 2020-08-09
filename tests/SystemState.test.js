@@ -49,7 +49,7 @@ module.exports = async function (test) {
 			t.ok(b instanceof AnotherModule);
 		});
 
-		await t.test('Multi bootstrap and setup support', async t => {
+		await t.test('Multi bootstrap, setup and teardown support', async t => {
 			const aConstructs = sinon.spy();
 
 			class ModuleA extends Module {
@@ -108,6 +108,33 @@ module.exports = async function (test) {
 			t.is(b2.teardown.callCount, 1);
 			t.ok(b2.teardown.calledBefore(b));
 			t.ok(b.teardown.calledBefore(a));
+
+			const [secondA, secondB] = system.bootstrap([ModuleA, ModuleB]);
+
+			t.is(aConstructs.callCount, 2);
+
+			sinon.spy(secondA, 'setup');
+			sinon.spy(secondB, 'setup');
+
+			await system.setup();
+
+			t.is(a.setup.callCount, 1);
+			t.is(b.setup.callCount, 1);
+			t.is(b2.setup.callCount, 1);
+			t.is(secondA.setup.callCount, 1);
+			t.is(secondB.setup.callCount, 1);
+			t.is(secondB.a, secondA);
+
+			sinon.spy(secondA, 'teardown');
+			sinon.spy(secondB, 'teardown');
+
+			await system.teardown();
+
+			t.is(secondA.teardown.callCount, 1);
+			t.is(secondB.teardown.callCount, 1);
+			t.is(a.teardown.callCount, 1);
+			t.is(b.teardown.callCount, 1);
+			t.is(b2.teardown.callCount, 1);
 		});
 
 		await t.test('Guards proper super.setup', async t => {
