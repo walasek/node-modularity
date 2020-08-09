@@ -39,7 +39,7 @@ module.exports = async function (test) {
 					await s.oneAtATime(() => s.oneAtATime(() => 'nope'));
 					return t.fail('Should have thrown');
 				} catch (err) {
-					t.ok(err.message.includes('recursion'));
+					t.ok(err.message.includes('recursion'), err);
 				}
 
 				await t.test('Allows normal calls after throw', async () => {
