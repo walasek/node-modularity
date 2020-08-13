@@ -1,4 +1,6 @@
 import { Module, SystemState } from '../..';
+import { MongooseModuleBase } from '../../prefabs/mongoose-module';
+import { Mongoose } from 'mongoose';
 
 class OtherMod extends Module {};
 
@@ -23,10 +25,17 @@ class SomeMod extends Module {
 	}
 }
 
+class MyMongoose extends MongooseModuleBase {
+	constructor(){
+		super(new Mongoose(), 'abc', {useNewUrlParser: true}, { exclusive: true });
+	}
+}
+
 class NotAMod {}
 
 const sys = new SystemState();
 sys.addModuleClass(SomeMod);
+sys.addModuleClass(MyMongoose);
 
 const x = sys.constructModule(SomeMod);
 x.a;

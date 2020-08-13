@@ -7,6 +7,8 @@
   },
   "files": [
     "lib/**/*.js",
+    "prefabs/*-module/*.js",
+    "prefabs/*-module/*.ts",
     "index.js",
     "index.d.ts"
   ],
@@ -18,7 +20,7 @@
     "watch:coverage": "nodemon --exec npm run coverage",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "check-dts": "tsc --noEmit index.d.ts && tsc --noEmit tests/typescript/test.ts",
+    "check-dts": "tsc -d --noEmit index.d.ts && tsc --noEmit tests/typescript/test.ts",
     "docs": "node node_modules/jsdoc/jsdoc.js -c jsdoc.json"
   },
   "respository": {
@@ -40,6 +42,7 @@
     "debug": "4.1.1"
   },
   "devDependencies": {
+    "@types/mongoose": "5.7.36",
     "docdash": "1.2.0",
     "eslint": "7.5.0",
     "eslint-config-prettier": "6.11.0",

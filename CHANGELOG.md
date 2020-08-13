@@ -5,6 +5,7 @@ This document provides a log of changes. It is currently maintained by hand.
 ## (master)
 
 - Fixed index.d.ts declarations missing from the published package...
+- [prefab][mongoose-module] Introduced a prototype prefab for mongoose with typings
 
 ## v0.2
 
