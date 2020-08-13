@@ -6,6 +6,8 @@ An easy dependency injection framework for any JavaScript application.
 
 [Documentation available here](https://walasek.github.io/node-modularity/).
 
+Check out some of existing wrappers around popular libraries (prefabs) [here](./prefabs)!
+
 ```bash
 npm install --save node-modularity
 ```
