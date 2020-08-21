@@ -61,6 +61,7 @@
 <p><a href="https://travis-ci.org/walasek/node-modularity"><img src="https://img.shields.io/travis/walasek/node-modularity.svg?style=flat-square" alt="Build Status"></a> <a href="https://www.npmjs.com/package/node-modularity"><img src="https://img.shields.io/npm/v/node-modularity.svg?style=flat-square" alt="Package Version"></a> <img src="https://img.shields.io/npm/l/node-modularity.svg?style=flat-square" alt="License"> <a href="https://david-dm.org/walasek/node-modularity"><img src="https://david-dm.org/walasek/node-modularity.svg" alt="Dependencies"></a>  <a href="https://codecov.io/gh/walasek/node-modularity"><img src="https://codecov.io/gh/walasek/node-modularity/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://snyk.io/test/github/walasek/node-modularity?targetFile=package.json"><img src="https://snyk.io/test/github/walasek/node-modularity/badge.svg?targetFile=package.json" alt="Known Vulnerabilities"></a></p>
 <p>An easy dependency injection framework for any JavaScript application.</p>
 <p><a href="https://walasek.github.io/node-modularity/">Documentation available here</a>.</p>
+<p>Check out some of existing wrappers around popular libraries (prefabs) <a href="./prefabs">here</a>!</p>
 <pre class="prettyprint source lang-bash"><code>npm install --save node-modularity
 </code></pre>
 <hr>
@@ -210,6 +211,21 @@ await system.setup();
 await system.teardown();
 // Throws if any issues occur
 </code></pre>
+<p>A <code>quickstrap</code> function has been added to make this quick. This will make testing easy!
+It allows easy registering of modules, calls bootstrap and setup in one call.</p>
+<pre class="prettyprint source lang-javascript"><code>const { quickstrap } = require('node-modularity');
+
+// First object is passed to system.bootstrap
+// The second object is a map or an array of modules which are possible dependencies (system.addModuleClass)
+// If a map is used then the keys are considered aliases for modules
+const { state: { myModule }, system } = await quickstrap({ myModule: 'someAlias' }, { someAlias: MyModule });
+myModule; // MyModule instance
+
+// Simplified syntax without aliases:
+await quickstrap({ myModule: MyModule }, [ MyModule, SomeOtherModule ]);
+
+await system.teardown();
+</code></pre>
 <h3>Graceful teardown</h3>
 <p>With this library you won't have to think about proper teardown procedure. Chances are you don't even handle app closure at all. This solution will scale all the way with your app.</p>
 <pre class="prettyprint source lang-javascript"><code>['SIGHUP', 'SIGINT', 'SIGTERM'].forEach(id => {
@@ -223,6 +239,51 @@ await system.teardown();
     }
   });
 });
+</code></pre>
+<h3>Testing</h3>
+<p>This library enables easy dependency injection in your unit and integration tests. You can take advantage of the <code>quickstrap</code> to easily set up your system state.</p>
+<pre class="prettyprint source lang-javascript"><code>class SomeModule extends Module {} // The original module
+class SomeModuleMock extends Module {} // The mock
+class MyModule extends Module { // The module to test
+  constructor() {
+    super({
+      inject: request => {
+        this.mod = request(SomeModule); // We reference the original module
+      }
+    })
+  }
+}
+
+const { state: { myTestableModule }, system } = await quickstrap(
+  { myTestableModule: MyModule }, // Bootstrap the tested module
+  { SomeModule: SomeModuleMock }, // Register the mock with an alias equal to the original module name
+);
+
+// Make sure to teardown your system, otherwise you might end up with dangling connections and handlers
+// mocha/jest:
+describe('My mocked module', () => {
+  let system;
+
+  beforeEach(async () => {
+    // .. quickstrap here
+  });
+
+  afterEach(async () => {
+    await system.teardown();
+  });
+
+  // tests ...
+});
+
+// tap/ava/other low-level framewroks
+test('My mocked module', () => {
+  // quickstrap here
+  try {
+    // tests ...
+  } finally {
+    await system.teardown();
+  }
+})
 </code></pre>
 <h3>Microservices</h3>
 <p>When your project is modular you can start thinking about microservices. With <em>Modularity</em> you're one step away from being able to control your modules easily. Just bootstrap what you need in separate containers - the library will take care of dependencies. If your module doesn't need a database connection or a distributed cache - it won't try to set it up.</p>
@@ -238,9 +299,10 @@ await system.teardown();
 <p>To introduce an improvement please fork this project, commit changes in a new branch to your fork and add a pull request on this repository pointing at your fork. Please follow these style recommendations when working on the code:</p>
 <ul>
 <li>Use <code>async</code>/<code>await</code> and/or <code>Promise</code> where possible.</li>
-<li>Features must be properly tested.</li>
+<li>Features must be properly tested (aim for 100% line coverage, but make sure to test all edge cases).</li>
 <li>New methods must be properly documented with <code>jscode</code> style comments.</li>
-<li>Lint the project before committing</li>
+<li>Interface updates must be reflected in <code>d.ts</code> files.</li>
+<li>Lint the project before committing.</li>
 </ul></article>
     </section>
 

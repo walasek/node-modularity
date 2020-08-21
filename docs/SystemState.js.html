@@ -65,7 +65,18 @@ class SystemState extends Module {
 	 * @param [overrideName] Class name override if encountering issues with transpiled solutions.
 	 */
 	addModuleClass(classObject, overrideName = null) {
+		if (!classObject) {
+			throw Error(
+				`The class object provided is falsy. Make sure to pass a valid class or that the variable ` +
+					`does not depend on a circular reference and cannot be transipled correctly.`
+			);
+		}
+
 		const name = overrideName || classObject.name;
+
+		if (!name) {
+			throw Error(`Could not infer class name from provided object. Please provide an alias manually.`);
+		}
 
 		if (this.knownClasses[name]) {
 			throw Error(`Tried to addModuleClass for an already known class or alias (${name}).`);
@@ -121,7 +132,7 @@ class SystemState extends Module {
 							}
 
 							// Build
-							const created = this.constructModule(ResolvedClass);
+							const created = this.constructModule(nameOrClassObject);
 
 							if (created.moduleIsExclusive()) {
 								debug(`Created instance of ${ResolvedClass.name} is exclusive and will not be reused`);
@@ -165,19 +176,19 @@ class SystemState extends Module {
 	 * @param {*} nameOrClassObject
 	 */
 	resolveClass(nameOrClassObject) {
+		let normalizedName = nameOrClassObject;
+
 		if (typeof nameOrClassObject === 'function') {
-			// Must check if we know it
-			if (!Object.values(this.knownClasses).find(obj => obj === nameOrClassObject)) {
-				throw Error('Attempted to resolve an unknown class ' + nameOrClassObject.name);
-			}
-			return nameOrClassObject;
-		} else if (typeof nameOrClassObject === 'string') {
-			const translated = this.knownClasses[nameOrClassObject];
+			normalizedName = nameOrClassObject.name;
+		}
+
+		if (typeof normalizedName === 'string') {
+			const translated = this.knownClasses[normalizedName];
 
 			if (translated) {
 				return translated;
 			}
-			throw Error('Unable to resolve class ' + nameOrClassObject);
+			throw Error('Unable to resolve class ' + normalizedName);
 		} else {
 			throw Error('Unable to resolve class of a name that is not a string');
 		}
