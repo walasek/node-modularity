@@ -1,5 +1,5 @@
 import { Module, ModuleConstructorOptions } from '../../';
-import e from 'express';
+import * as e from 'express';
 
 export interface MiddlewareOptions {
 	after: Module | Module[];

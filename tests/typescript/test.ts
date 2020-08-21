@@ -1,7 +1,7 @@
 import { Module, SystemState, quickstrap } from '../..';
 import { MongooseModuleBase } from '../../prefabs/mongoose-module';
 import { Mongoose } from 'mongoose';
-import express from 'express';
+import * as express from 'express';
 import { ExpressModuleBase } from '../../prefabs/express-module';
 
 class OtherMod extends Module {};
