@@ -49,6 +49,16 @@ module.exports = async function (test) {
 			t.ok(b instanceof AnotherModule);
 		});
 
+		t.test('Bootstrap aliased', t => {
+			class SomeModule extends Module {}
+
+			system.addModuleClass(SomeModule, 'Aliased');
+
+			const [a] = system.bootstrap(['Aliased']);
+
+			t.ok(a instanceof SomeModule);
+		});
+
 		await t.test('Multi bootstrap, setup and teardown support', async t => {
 			const aConstructs = sinon.spy();
 
@@ -191,6 +201,15 @@ module.exports = async function (test) {
 
 				system.addModuleClass(a);
 				t.throws(() => system.addModuleClass(b));
+			});
+
+			t.test('Handles undefined registration attempts', t => {
+				t.throws(() => system.addModuleClass(undefined));
+				t.throws(() => system.addModuleClass(null));
+			});
+
+			t.test('Handles attempts of null class names', t => {
+				t.throws(() => system.addModuleClass({}));
 			});
 		});
 	});
