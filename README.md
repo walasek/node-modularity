@@ -171,6 +171,24 @@ await system.teardown();
 // Throws if any issues occur
 ```
 
+A `quickstrap` function has been added to make this quick. This will make testing easy!
+It allows easy registering of modules, calls bootstrap and setup in one call.
+
+```javascript
+const { quickstrap } = require('node-modularity');
+
+// First object is passed to system.bootstrap
+// The second object is a map or an array of modules which are possible dependencies (system.addModuleClass)
+// If a map is used then the keys are considered aliases for modules
+const { state: { myModule }, system } = await quickstrap({ myModule: 'someAlias' }, { someAlias: MyModule });
+myModule; // MyModule instance
+
+// Simplified syntax without aliases:
+await quickstrap({ myModule: MyModule }, [ MyModule, SomeOtherModule ]);
+
+await system.teardown();
+```
+
 ### Graceful teardown
 
 With this library you won't have to think about proper teardown procedure. Chances are you don't even handle app closure at all. This solution will scale all the way with your app.
@@ -187,6 +205,55 @@ With this library you won't have to think about proper teardown procedure. Chanc
     }
   });
 });
+```
+
+### Testing
+
+This library enables easy dependency injection in your unit and integration tests. You can take advantage of the `quickstrap` to easily set up your system state.
+
+```javascript
+class SomeModule extends Module {} // The original module
+class SomeModuleMock extends Module {} // The mock
+class MyModule extends Module { // The module to test
+  constructor() {
+    super({
+      inject: request => {
+        this.mod = request(SomeModule); // We reference the original module
+      }
+    })
+  }
+}
+
+const { state: { myTestableModule }, system } = await quickstrap(
+  { myTestableModule: MyModule }, // Bootstrap the tested module
+  { SomeModule: SomeModuleMock }, // Register the mock with an alias equal to the original module name
+);
+
+// Make sure to teardown your system, otherwise you might end up with dangling connections and handlers
+// mocha/jest:
+describe('My mocked module', () => {
+  let system;
+
+  beforeEach(async () => {
+    // .. quickstrap here
+  });
+
+  afterEach(async () => {
+    await system.teardown();
+  });
+
+  // tests ...
+});
+
+// tap/ava/other low-level framewroks
+test('My mocked module', () => {
+  // quickstrap here
+  try {
+    // tests ...
+  } finally {
+    await system.teardown();
+  }
+})
 ```
 
 ### Microservices
@@ -213,7 +280,8 @@ The documentation will be put in the new `docs` directory.
 
 To introduce an improvement please fork this project, commit changes in a new branch to your fork and add a pull request on this repository pointing at your fork. Please follow these style recommendations when working on the code:
 
-* Use `async`/`await` and/or `Promise` where possible.
-* Features must be properly tested.
-* New methods must be properly documented with `jscode` style comments.
-* Lint the project before committing
+- Use `async`/`await` and/or `Promise` where possible.
+- Features must be properly tested (aim for 100% line coverage, but make sure to test all edge cases).
+- New methods must be properly documented with `jscode` style comments.
+- Interface updates must be reflected in `d.ts` files.
+- Lint the project before committing.
