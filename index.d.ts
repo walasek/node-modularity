@@ -13,6 +13,7 @@ export class Module {
 	constructor(options?: ModuleConstructorOptions);
 
 	setup(): void;
+	postSetup(): void;
 	teardown(): void;
 	moduleIsExclusive(): boolean;
 	moduleWasSetUp(): boolean;
@@ -41,4 +42,4 @@ export class SystemState extends Module {
 
 export type QuickstrapKnownModules = ModuleClass[] | {[alias: string]: ModuleClass};
 export type QuickstrapResult<K> = { state: K, system: SystemState };
-export function quickstrap<K>(requirements: ClassOfMembers<K>, knownModules: QuickstrapKnownModules): QuickstrapResult<K>;
+export function quickstrap<K>(requirements: ClassOfMembers<K>, knownModules: QuickstrapKnownModules): Promise<QuickstrapResult<K>>;

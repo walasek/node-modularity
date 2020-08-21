@@ -131,6 +131,11 @@ class MyModule extends Module {
     }
   }
 
+  async postSetup() {
+    // Additional operations to be performed after all modules are set up.
+    // These may be called in a random order.
+  }
+
   async teardown() {
     super.teardown(); // Make sure the internal state knows about this
 
