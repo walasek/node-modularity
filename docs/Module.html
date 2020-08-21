@@ -27,7 +27,7 @@
 
 <nav >
     
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Module.html">Module</a><ul class='methods'><li data-type='method'><a href="Module.html#moduleIsExclusive">moduleIsExclusive</a></li><li data-type='method'><a href="Module.html#modulePerformInjection">modulePerformInjection</a></li><li data-type='method'><a href="Module.html#moduleWasSetUp">moduleWasSetUp</a></li><li data-type='method'><a href="Module.html#setup">setup</a></li><li data-type='method'><a href="Module.html#teardown">teardown</a></li></ul></li><li><a href="SystemState.html">SystemState</a><ul class='methods'><li data-type='method'><a href="SystemState.html#addModuleClass">addModuleClass</a></li><li data-type='method'><a href="SystemState.html#bootstrap">bootstrap</a></li><li data-type='method'><a href="SystemState.html#resolveClass">resolveClass</a></li><li data-type='method'><a href="SystemState.html#setup">setup</a></li><li data-type='method'><a href="SystemState.html#teardown">teardown</a></li></ul></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Module.html">Module</a><ul class='methods'><li data-type='method'><a href="Module.html#moduleIsExclusive">moduleIsExclusive</a></li><li data-type='method'><a href="Module.html#modulePerformInjection">modulePerformInjection</a></li><li data-type='method'><a href="Module.html#moduleWasSetUp">moduleWasSetUp</a></li><li data-type='method'><a href="Module.html#postSetup">postSetup</a></li><li data-type='method'><a href="Module.html#setup">setup</a></li><li data-type='method'><a href="Module.html#teardown">teardown</a></li></ul></li><li><a href="SystemState.html">SystemState</a><ul class='methods'><li data-type='method'><a href="SystemState.html#addModuleClass">addModuleClass</a></li><li data-type='method'><a href="SystemState.html#bootstrap">bootstrap</a></li><li data-type='method'><a href="SystemState.html#resolveClass">resolveClass</a></li><li data-type='method'><a href="SystemState.html#setup">setup</a></li><li data-type='method'><a href="SystemState.html#teardown">teardown</a></li></ul></li></ul>
 </nav>
 
 <div id="main">
@@ -179,7 +179,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line38">line 38</a>
+        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line46">line 46</a>
     </li></ul></dd>
     
 
@@ -266,7 +266,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line53">line 53</a>
+        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line61">line 61</a>
     </li></ul></dd>
     
 
@@ -402,7 +402,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line45">line 45</a>
+        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line53">line 53</a>
     </li></ul></dd>
     
 
@@ -443,6 +443,94 @@
 
 <div class="description usertext">
     <p>Return whether this module was set up.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="postSetup"><span class="type-signature"></span>postSetup<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line31">line 31</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Called after all modules are set up. Useful with some use cases.
+Async methods are supported.</p>
 </div>
 
 
@@ -579,7 +667,7 @@ As a library user you should define your own <code>setup</code> method and call 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line33">line 33</a>
+        <a href="Module.js.html">Module.js</a>, <a href="Module.js.html#line39">line 39</a>
     </li></ul></dd>
     
 
