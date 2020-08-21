@@ -1,4 +1,4 @@
-import { Module, SystemState } from '../..';
+import { Module, SystemState, quickstrap } from '../..';
 import { MongooseModuleBase } from '../../prefabs/mongoose-module';
 import { Mongoose } from 'mongoose';
 
@@ -49,3 +49,5 @@ mod.c;
 state.myMod.a;
 
 sys.setup().then(() => sys.teardown());
+
+const { state: { aliasedMod }, system } = quickstrap({aliasedMod: 'alias'}, {alias: SomeMod});

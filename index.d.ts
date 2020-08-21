@@ -20,7 +20,7 @@ export class Module {
 	assertDependenciesSetup(): void;
 }
 
-export type ClassOfMembers<T> = { [P in keyof T]: ClassOf<T[P]> };
+export type ClassOfMembers<T> = { [P in keyof T]: ClassOf<T[P]> | string };
 
 export class SystemState extends Module {
 	addModuleClass(someClass: ModuleClass, overrideName?: string): void;
@@ -38,3 +38,7 @@ export class SystemState extends Module {
 	teardown(): Promise<void>;
 	invertSetupModulesList(): void;
 }
+
+export type QuickstrapKnownModules = ModuleClass[] | {[alias: string]: ModuleClass};
+export type QuickstrapResult<K> = { state: K, system: SystemState };
+export function quickstrap<K>(requirements: ClassOfMembers<K>, knownModules: QuickstrapKnownModules): QuickstrapResult<K>;
