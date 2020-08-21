@@ -15,6 +15,9 @@ class ExpressModuleBase extends Module {
 		for (const method of expressMethods) {
 			this[method] = (caller, fn, options) => this.addMiddleware(caller, method, fn, options);
 		}
+
+		// A dummy middleware that will allow `before` and `each`
+		this.use(this, (_, __, next) => next());
 	}
 
 	addMiddleware(caller, method, fn, options = {}) {

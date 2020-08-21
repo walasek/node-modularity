@@ -7,6 +7,7 @@ This is a prefab of a module which handles [express](https://www.npmjs.com/packa
 - No dependencies (express library is injected)
 - Exposes additional logs with `DEBUG=modularity:express`
 - Handles middleware registration and controls ordering by `before` and `after` constraints
+  - When a module requested in before/after does not exist in the current graph - no error is thrown
 - Registers middlewares in the `postSetup` step
 
 ## Usage
