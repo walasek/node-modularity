@@ -5,3 +5,4 @@ Prefab modules are example implementations of wrappers around popular libraries.
 | name | library | notes |
 | --- | --- | --- |
 | [mongoose-module](./mongoose-module) | [mongoose](https://www.npmjs.com/package/mongoose) | Prototype |
+| [express-module](./express-module) | [express](https://www.npmjs.com/package/express) | Prototype |

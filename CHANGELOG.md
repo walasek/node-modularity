@@ -6,9 +6,12 @@ This document provides a log of changes. It is currently maintained by hand.
 
 - Fixed index.d.ts declarations missing from the published package...
 - Introduced the `quickstrap` function
+- Introduced `postSetup` module method
 - Improved alias support, fixed some cases where aliases would be ignored
 - Added notes on testing and mocking modules
+- Module teardown now requires `super.teardown`
 - [prefab][mongoose-module] Introduced a prototype prefab for mongoose with typings
+- [prefab][express-module] Introduced a prototype prefab for express with typings
 
 ## v0.2
 

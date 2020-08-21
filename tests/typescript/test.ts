@@ -1,6 +1,8 @@
 import { Module, SystemState, quickstrap } from '../..';
 import { MongooseModuleBase } from '../../prefabs/mongoose-module';
 import { Mongoose } from 'mongoose';
+import express from 'express';
+import { ExpressModuleBase } from '../../prefabs/express-module';
 
 class OtherMod extends Module {};
 
@@ -50,4 +52,21 @@ state.myMod.a;
 
 sys.setup().then(() => sys.teardown());
 
-const { state: { aliasedMod }, system } = quickstrap({aliasedMod: 'alias'}, {alias: SomeMod});
+quickstrap({aliasedMod: 'alias'}, {alias: SomeMod}).then(result => {
+	const { state: { aliasedMod }, system } = result;
+	(aliasedMod as SomeMod).assertDependenciesSetup();
+	system.teardown();
+});
+
+class MyExpress extends ExpressModuleBase {
+	constructor(){
+		super(express);
+	}
+}
+
+quickstrap({ web: MyExpress }, {MyExpress}).then(({state}) => {
+	state.web.getApp().listen();
+	state.web.addMiddleware(mod, 'post', (req) => {
+
+	});
+});
