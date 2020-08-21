@@ -16,7 +16,7 @@ module.exports = {
 		'comma-style': ['error', 'last'],
 		curly: ['error', 'all'],
 		'default-case': 'error',
-		'guard-for-in': 'warn',
+		'guard-for-in': 'off',
 		indent: ['warn', 'tab', { SwitchCase: 1 }], // Prettier ignores this
 		'keyword-spacing': ['error', { before: true, after: true }],
 		'linebreak-style': ['error', 'unix'], // Prettier ignores this

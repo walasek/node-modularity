@@ -84,24 +84,33 @@ module.exports = async function (test) {
 			const [a, b] = system.bootstrap([ModuleA, ModuleB]);
 
 			sinon.spy(a, 'setup');
+			sinon.spy(a, 'postSetup');
 			sinon.spy(b, 'setup');
+			sinon.spy(b, 'postSetup');
 
 			await system.setup();
 
 			t.is(a.setup.callCount, 1);
 			t.is(b.setup.callCount, 1);
+			t.is(a.postSetup.callCount, 1);
+			t.is(b.postSetup.callCount, 1);
 			t.is(aConstructs.callCount, 1);
+			t.ok(a.setup.calledBefore(b.setup));
 
 			const [b2] = system.bootstrap([ModuleB]);
 
 			sinon.spy(b2, 'setup');
+			sinon.spy(b2, 'postSetup');
 
 			await system.setup();
 
 			t.is(a.setup.callCount, 1);
+			t.is(a.postSetup.callCount, 1);
 			t.is(aConstructs.callCount, 1, 'A dependent module should not be constructed since its already made');
 			t.is(b.setup.callCount, 1);
+			t.is(b.postSetup.callCount, 1);
 			t.is(b2.setup.callCount, 1);
+			t.is(b2.postSetup.callCount, 1);
 
 			t.ok(b2 instanceof ModuleB);
 			t.ok(b2 != b);
@@ -125,14 +134,21 @@ module.exports = async function (test) {
 
 			sinon.spy(secondA, 'setup');
 			sinon.spy(secondB, 'setup');
+			sinon.spy(secondA, 'postSetup');
+			sinon.spy(secondB, 'postSetup');
 
 			await system.setup();
 
 			t.is(a.setup.callCount, 1);
 			t.is(b.setup.callCount, 1);
 			t.is(b2.setup.callCount, 1);
+			t.is(a.postSetup.callCount, 1);
+			t.is(b.postSetup.callCount, 1);
+			t.is(b2.postSetup.callCount, 1);
 			t.is(secondA.setup.callCount, 1);
 			t.is(secondB.setup.callCount, 1);
+			t.is(secondA.postSetup.callCount, 1);
+			t.is(secondB.postSetup.callCount, 1);
 			t.is(secondB.a, secondA);
 
 			sinon.spy(secondA, 'teardown');
@@ -160,6 +176,26 @@ module.exports = async function (test) {
 				t.fail('Should have thrown');
 			} catch (err) {
 				t.ok(err.message.indexOf('super.setup') !== -1);
+			}
+		});
+
+		await t.test('Guards proper super.teardown', async t => {
+			class SomeInvalidModule2 extends Module {
+				teardown() {} // Missing super
+			}
+
+			const sys = new SystemState();
+
+			sys.addModuleClass(SomeInvalidModule2);
+			sys.bootstrap([SomeInvalidModule2]);
+
+			await sys.setup();
+
+			try {
+				await sys.teardown();
+				t.fail('Should have thrown');
+			} catch (err) {
+				t.ok(err.message.indexOf('super.teardown') !== -1);
 			}
 		});
 
