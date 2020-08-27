@@ -1,7 +1,7 @@
 const { Module } = require('../../');
 const debug = require('debug')('modularity:express');
 
-const expressMethods = ['get', 'post', 'put', 'delete', 'options', 'head', 'use'];
+const expressMethods = ['get', 'post', 'put', 'delete', 'options', 'head'];
 
 class ExpressModuleBase extends Module {
 	constructor(express, moduleOptions = {}) {
@@ -13,15 +13,20 @@ class ExpressModuleBase extends Module {
 		this.app = null;
 
 		for (const method of expressMethods) {
-			this[method] = (caller, fn, options) => this.addMiddleware(caller, method, fn, options);
+			this[method] = (caller, path, fn, options) =>
+				this.addMiddleware(caller, method, fn, {
+					...options,
+					path,
+				});
 		}
+		this.use = (caller, fn, options) => this.addMiddleware(caller, 'use', fn, options);
 
 		// A dummy middleware that will allow `before` and `each`
 		this.use(this, (_, __, next) => next());
 	}
 
 	addMiddleware(caller, method, fn, options = {}) {
-		const callerName = this.callerName();
+		const callerName = this.callerName(caller);
 
 		debug(`Caller ${callerName} adding a "${method}" middleware`);
 		this.middlewareRegistrationQueue.push({ caller, callerName, fn, options, method });
@@ -92,7 +97,11 @@ class ExpressModuleBase extends Module {
 
 				if (canInit) {
 					debug(`Setting up ${callerName} middlewares`);
-					this.app[method](fn);
+					if (options.path) {
+						this.app[method](options.path, fn);
+					} else {
+						this.app[method](fn);
+					}
 					queue[k].drop = true;
 					droppedItems++;
 				}

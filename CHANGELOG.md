@@ -4,6 +4,8 @@ This document provides a log of changes. It is currently maintained by hand.
 
 ## (master)
 
+- [prefab][express-module] Fixed http request type proxy methods not accepting a path (yikes!)
+
 ## v0.3
 
 - Fixed index.d.ts declarations missing from the published package...
@@ -24,7 +26,6 @@ This document provides a log of changes. It is currently maintained by hand.
 - Secured module registration from overriding already registered modules.
 - Removed `SystemState.hintModuleDependencies`
 - Wrote a lot of details into the README.
-
 
 ## v0.1
 

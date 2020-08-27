@@ -55,13 +55,13 @@ module.exports = async function (test) {
 				middlewareSpy();
 			});
 
-			web.get('test', () => {});
+			web.get('test', '/', () => {});
 
 			await system.setup();
 			const app = web.getApp();
 
-			t.is(app.use.callCount, 1);
-			t.is(app.get.callCount, 1);
+			t.is(app.use.callCount, 2, 'Expected middleware to be called once on the express object');
+			t.is(app.get.callCount, 1, 'Expected get to be called once on the express object');
 
 			await system.teardown();
 		});
@@ -82,7 +82,7 @@ module.exports = async function (test) {
 
 					async setup() {
 						super.setup();
-						this.web.get(this, this.endpoint, { after: this.middleware });
+						this.web.get(this, '/', this.endpoint, { after: this.middleware });
 					}
 				}
 
@@ -101,8 +101,8 @@ module.exports = async function (test) {
 				await system.setup();
 				const app = web.getApp();
 
-				t.is(app.use.callCount, 1);
-				t.is(app.get.callCount, 1);
+				t.is(app.use.callCount, 2, 'Expected middleware to be called once on the express object');
+				t.is(app.get.callCount, 1, 'Expected get to be called once on the express object');
 				t.ok(app.use.calledBefore(app.get), 'Use should be registered first');
 
 				await system.teardown();
@@ -123,7 +123,7 @@ module.exports = async function (test) {
 
 					async setup() {
 						super.setup();
-						this.web.get(this, this.endpoint, { before: this.middleware });
+						this.web.get(this, '/', this.endpoint, { before: this.middleware });
 					}
 				}
 
@@ -142,8 +142,8 @@ module.exports = async function (test) {
 				await system.setup();
 				const app = web.getApp();
 
-				t.is(app.use.callCount, 1);
-				t.is(app.get.callCount, 1);
+				t.is(app.use.callCount, 2, 'Expected middleware to be called once on the express object');
+				t.is(app.get.callCount, 1, 'Expected get to be called once on the express object');
 				t.ok(app.use.calledAfter(app.get), 'Get should be registered first');
 
 				await system.teardown();
@@ -164,7 +164,7 @@ module.exports = async function (test) {
 
 					async setup() {
 						super.setup();
-						this.web.get(this, this.endpoint, { before: this.middleware, after: this.middleware });
+						this.web.get(this, '/', this.endpoint, { before: this.middleware, after: this.middleware });
 					}
 				}
 
