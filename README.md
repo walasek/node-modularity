@@ -18,64 +18,54 @@ npm install --save node-modularity
 
 I've seen way too many JavaScript applications which don't properly handle their system state. Are you also tired of database connections held in global variables and singletons with unknown lifecycle? This framework is for you!
 
+Imagine a system that can be extended by simply writing your new features as modules:
+
 ```javascript
-// Simplified example, see below for usage
-const { Module, SystemState } = require('node-modularity');
+// See 'Usage' for all available options such as teardown, postSetup and more!
+const { Module } = require('node-modularity');
 
-// Wrap your dependencies in modules
-class DatabaseConnection extends Module {
-  async setup(){
-    this.db = await connectToMyDb();
-  }
-}
-
-class WebServer extends Module {
-  async setup(){
-    this.app = express();
-  }
-}
-
-// Define your own logic as modules too
-class RESTEndpoints extends Module {
-  constructor(){
+// Wrap your logic in modules
+class MyWebhookHandler extends Module {
+  constructor() {
     super({
-      // Declare your dependencies
       inject: request => {
-        this.database = request(DatabaseConnection),
-        this.webserver = request(WebServer)
+        // This is how you define dependencies
+        this.security = request(MySecurityModule);
+        this.webserver = request(MyWebServerModule);
+        this.database = request(MyDatabaseModule);
       }
     });
   }
 
-  // Magically this will be called after the dependencies are ready!
-  // No more lifecycle management!
-  async setup(){
-    this.webserver.app.get('/', (req, res) =>
-      res.json(`Hello mr ${this.database.getUserData()}`)
-    );
+  async setup() {
+    super.setup();
+
+    // Logic that entangles dependenceis
+    // See express-module-prefab for more details
+    this.webserver.get(this, '/webhook', (req, res) => {
+      this.database.saveIncomingData(req.body);
+      res.send('ok');
+    }, { after: this.security });
+  }
+
+  debug() {
+    console.log('Print some data here');
   }
 }
+```
 
-// The system object will hold our state, no globals!
-const system = new SystemState();
-// Register known modules to be able to construct and inject them
-system.addModuleClass(WebServer);
-system.addModuleClass(DatabaseConnection);
-system.addModuleClass(RESTEndpoints);
-system.addModuleClass(SomeUnrelatedModule);
+Running your system can be as simple as follows:
 
-// Bootstrap will only construct these modules and their dependencies
-// SomeUnrelatedModule will not be constructed even if it's registered
-const modules = system.bootstrap({
-  myRestEndpoints: RESTEndpoints
-});
+```javascript
+const { quickstrap } = require('node-modularity');
 
-// Setup will resolve your dependency graph in the right order
-await system.setup();
-modules.myRestEndpoints.webserver.app.listen(80);
-// ...
-// You can also define teardown methods and close the system in the proper order!
-await system.teardown();
+const { state: { webhooks } } = await quickstrap(
+  { webhooks: MyWebhookHandler },
+  [ MySecurityModule, MyWebServerModule, MyDatabaseModule ]
+);
+
+// Access created instances
+webhooks.debug();
 ```
 
 ## Features and remarks
