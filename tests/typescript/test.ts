@@ -69,4 +69,7 @@ quickstrap({ web: MyExpress }, {MyExpress}).then(({state}) => {
 	state.web.addMiddleware(mod, 'post', (req) => {
 
 	});
+	state.web.get(state.web, '/some-path', (req, res) => {
+		res.send('ok');
+	});
 });
