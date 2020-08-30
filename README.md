@@ -293,7 +293,7 @@ When building a project using this library consider following these guidelines:
 
 - Consider creating a module for environment variable access. Do not limit yourself to `process.env`, there can be other sources of configuration (`.env`, Redis, 3rd party services). Take advantage of this module to catch situations where a variable might not have been set - throw errors or assign defaults.
 
-- Consider creating a module for logging. While I do not recommend managing logs in your application - such a module might be useful to properly format your logs before processing with another tool (assign a date, print in a desired format etc.). It will also enable an easy switch to libraries such as `winston`.
+- Consider creating a module for logging. While I do not recommend managing logs in your application - such a module might be useful to properly format your logs before processing with another tool (assign a date, print in a desired format etc.). It will also enable an easy switch to libraries such as `winston`. Make sure to also provide fallback static methods for logging when the modular system is not yet initialized (or has failed to set up).
 
 - When working with message queues or databases - consider defining a `teardown` procedure which would wait for all current operations to be finished before closing connections.
 
