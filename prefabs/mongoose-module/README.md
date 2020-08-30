@@ -43,7 +43,7 @@ class MongooseModule extends MongooseModuleBase {
 
         // This is how you can register mongoose models
         // It is NOT recommended to do it in this class
-        // Instead create separate Modules which will call this instead
+        // Instead create separate Modules which will call this (UserModule)
         this.registerModel('User', UserSchema);
     }
 }
