@@ -57,7 +57,7 @@ class MyHelloPage extends Module {
 
         // Regular http method
         // Can use get, post, put, delete, options, head
-        this.web.get(this, (req, res) => res.json({ message: 'hi!' }));
+        this.web.get(this, '/my-path', (req, res) => res.json({ message: 'hi!' }));
 
         // Regular middleware
         this.web.use(this, (req, res, next) => next());
