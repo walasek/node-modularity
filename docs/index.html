@@ -64,67 +64,67 @@
 <p>Check out some of existing wrappers around popular libraries (prefabs) <a href="./prefabs">here</a>!</p>
 <pre class="prettyprint source lang-bash"><code>npm install --save node-modularity
 </code></pre>
+<ul>
+<li><a href="#goal">Goal</a></li>
+<li><a href="#features-and-remarks">Features and remarks</a></li>
+<li><a href="#usage">Usage</a>
+<ul>
+<li><a href="#graceful-teardown">Graceful teardown</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#microservices">Microservices</a></li>
+</ul>
+</li>
+<li><a href="#design-tips">Design tips</a></li>
+<li><a href="#contributing">Contributing</a></li>
+</ul>
 <hr>
 <h2>Goal</h2>
 <p>I've seen way too many JavaScript applications which don't properly handle their system state. Are you also tired of database connections held in global variables and singletons with unknown lifecycle? This framework is for you!</p>
-<pre class="prettyprint source lang-javascript"><code>// Simplified example, see below for usage
-const { Module, SystemState } = require('node-modularity');
+<p>Imagine a system that can be extended by simply writing your new features as modules:</p>
+<pre class="prettyprint source lang-javascript"><code>// See 'Usage' for all available options such as teardown, postSetup and more!
+const { Module } = require('node-modularity');
 
-// Wrap your dependencies in modules
-class DatabaseConnection extends Module {
-  async setup(){
-    this.db = await connectToMyDb();
-  }
-}
-
-class WebServer extends Module {
-  async setup(){
-    this.app = express();
-  }
-}
-
-// Define your own logic as modules too
-class RESTEndpoints extends Module {
-  constructor(){
+// Wrap your logic in modules
+class MyWebhookHandler extends Module {
+  constructor() {
     super({
-      // Declare your dependencies
       inject: request => {
-        this.database = request(DatabaseConnection),
-        this.webserver = request(WebServer)
+        // This is how you define dependencies
+        this.security = request(MySecurityModule);
+        this.webserver = request(MyWebServerModule);
+        this.database = request(MyDatabaseModule);
       }
     });
   }
 
-  // Magically this will be called after the dependencies are ready!
-  // No more lifecycle management!
-  async setup(){
-    this.webserver.app.get('/', (req, res) =>
-      res.json(`Hello mr ${this.database.getUserData()}`)
-    );
+  async setup() {
+    super.setup();
+
+    // Logic that entangles dependenceis
+    // See express-module-prefab for more details
+    this.webserver.get(this, '/webhook', (req, res) => {
+      this.database.saveIncomingData(req.body);
+      res.send('ok');
+    }, { after: this.security });
+  }
+
+  debug() {
+    console.log('Print some data here');
   }
 }
-
-// The system object will hold our state, no globals!
-const system = new SystemState();
-// Register known modules to be able to construct and inject them
-system.addModuleClass(WebServer);
-system.addModuleClass(DatabaseConnection);
-system.addModuleClass(RESTEndpoints);
-system.addModuleClass(SomeUnrelatedModule);
-
-// Bootstrap will only construct these modules and their dependencies
-// SomeUnrelatedModule will not be constructed even if it's registered
-const modules = system.bootstrap({
-  myRestEndpoints: RESTEndpoints
-});
-
-// Setup will resolve your dependency graph in the right order
-await system.setup();
-modules.myRestEndpoints.webserver.app.listen(80);
-// ...
-// You can also define teardown methods and close the system in the proper order!
-await system.teardown();
 </code></pre>
+<p>Running your system can be as simple as follows:</p>
+<pre class="prettyprint source lang-javascript"><code>const { quickstrap } = require('node-modularity');
+
+const { state: { webhooks } } = await quickstrap(
+  { webhooks: MyWebhookHandler },
+  [ MySecurityModule, MyWebServerModule, MyDatabaseModule ]
+);
+
+// Access created instances
+webhooks.debug();
+</code></pre>
+<p>The library will take care of constructing and initializing your modules in the proper order (by resolving dependencies as a graph). It also enables proper teardown by reversing the order of module initialization.</p>
 <h2>Features and remarks</h2>
 <ul>
 <li>Modules will be reused by default, so if you declare 5 modules that depend on another module then 6 modules will be constructed in total.
@@ -135,8 +135,6 @@ await system.teardown();
 <li>Modules can be referenced by an alias. Got a logger module that prints to console and another one that prints nothing, both with different classnames? Just register one with an alias! You can also use aliases when requesting modules for injection.</li>
 <li>Cyclic dependency graphs (A-&gt;B-&gt;C-&gt;A) are supported as long as one of the dependencies is marked as <em>optional</em>. In transpiled code you might have to use string aliases, otherwise you'll encounter undefined imports.</li>
 <li>Currently the modules can only be created using a no-argument <em>new</em> call. In the future it will be possible to define a default factory function and to require exclusive modules with custom arguments per injection.</li>
-<li>It is possible to avoid <code>addModuleClass</code> calls at all. An option might be added to enable <em>registering-during-injection</em> if a class is provided.</li>
-<li>I might provide some extra modules that wrap some popular libraries such as Express or Mongo. This would enable instant prototyping of some simple web apps with this framework.</li>
 <li>Interaction with transpilers (Babel, TypeScript) and bundlers (Browserify, Webpack) is not tested at this moment. They are known to modify class names and might break some internal mechanisms of this library.</li>
 <li>SystemState methods are secured with a semaphore. If your module somehow tries to call a setup while being in a setup phase then an error will be thrown. This is to ensure consistent operation.</li>
 <li>SystemState is a Module itself! You can take advantage of this and define very complex multi-domain applications that are separated from each other while you keep the ability to scale the project further easily.</li>
@@ -184,6 +182,8 @@ await system.teardown();
     super.teardown(); // Make sure the internal state knows about this
 
     // Cleanup connections, handles or other resources
+    // Dependencies injected with `request` are guaranteed NOT to be torn down
+    // Optional dependencies might have been torn down
   }
 }
 </code></pre>
@@ -293,6 +293,60 @@ test('My mocked module', () => {
 <h3>Microservices</h3>
 <p>When your project is modular you can start thinking about microservices. With <em>Modularity</em> you're one step away from being able to control your modules easily. Just bootstrap what you need in separate containers - the library will take care of dependencies. If your module doesn't need a database connection or a distributed cache - it won't try to set it up.</p>
 <p>The problem of communicating separated microservices is left to you to solve. Will it be a module which will handle a Message Queue, or some RPC abstraction? Wrap your transport layer in a Module and inject it - only where needed!</p>
+<h2>Design tips</h2>
+<p>When building a project using this library consider following these guidelines:</p>
+<ul>
+<li>
+<p>Consider structuring your project with the following directories:</p>
+<ul>
+<li><code>entrypoints</code> are scripts which can be run with the <code>node</code> command, they should contain System construction and <code>bootstrap</code> calls with proper modules
+<ul>
+<li>An example of an entrypoint could be a <code>main.js</code> file which would start all major modules</li>
+<li>Another example would be a <code>stats.js</code> file which would load modules related to data storage to only print some usage statistics</li>
+<li>Another example would be a <code>microservice.js</code> file which would only load some modules specified as command arguments</li>
+</ul>
+</li>
+<li><code>modules</code> should contain module definitions in a per-feature fashion (if possible). It is recommended to avoid shallow and wide structures, instead try to subdivide modules into functional groups.
+<ul>
+<li>It is recommended to add tests directly next to implementation files.</li>
+<li>If the module is complex then create a <code>tests</code> directory and store test files there.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Always use named exports. This allows consistent class names across the project.</p>
+<ul>
+<li>DON'T <code>module.exports = MyClass</code> or <code>export default MyClass</code> because <code>const MyDifferentName = require('...')</code> and <code>import MyDifferentName from ....</code></li>
+<li>DO <code>module.exports = { MyClass }</code> or <code>export MyClass</code></li>
+</ul>
+</li>
+<li>
+<p>Name your module classes with <code>*Module</code> suffix.</p>
+</li>
+<li>
+<p>Avoid building shallow system structures. Instead try to design your modules in a tree-like family by creating a module that only has a responsibility of containing references to other modules.</p>
+<ul>
+<li>DON'T <code>quickstrap({ UsersEndpoints, UserModel, ExpressServer, ExpressSessions, Database, ... })</code> because you'll end up with a long list of modules which will most likely be duplicated in some of your tests and entrypoints</li>
+<li>DO <code>quickstrap({ AllEndpoints, AllModels, Database, ... })</code> because you'll be able to easily build new entrypoints and tests with just a few module references</li>
+</ul>
+</li>
+<li>
+<p>Consider creating a module for environment variable access. Do not limit yourself to <code>process.env</code>, there can be other sources of configuration (<code>.env</code>, Redis, 3rd party services). Take advantage of this module to catch situations where a variable might not have been set - throw errors or assign defaults.</p>
+</li>
+<li>
+<p>Consider creating a module for logging. While I do not recommend managing logs in your application - such a module might be useful to properly format your logs before processing with another tool (assign a date, print in a desired format etc.). It will also enable an easy switch to libraries such as <code>winston</code>.</p>
+</li>
+<li>
+<p>When working with message queues or databases - consider defining a <code>teardown</code> procedure which would wait for all current operations to be finished before closing connections.</p>
+</li>
+<li>
+<p>Consider adding <code>SIGINT/SIGHUP/SIGTERM</code> handlers to perform graceful teardown of modules.</p>
+</li>
+<li>
+<p>This library takes advantage of the <a href="https://www.npmjs.com/package/debug">debug</a> package. Make sure to check it out and consider using it in your project.</p>
+</li>
+</ul>
 <h2>Contributing</h2>
 <p>The source is documented with JSDoc. To generate the documentation use:</p>
 <pre class="prettyprint source lang-bash"><code>npm run docs

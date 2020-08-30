@@ -12,6 +12,15 @@ Check out some of existing wrappers around popular libraries (prefabs) [here](./
 npm install --save node-modularity
 ```
 
+- [Goal](#goal)
+- [Features and remarks](#features-and-remarks)
+- [Usage](#usage)
+  - [Graceful teardown](#graceful-teardown)
+  - [Testing](#testing)
+  - [Microservices](#microservices)
+- [Design tips](#design-tips)
+- [Contributing](#contributing)
+
 ---
 
 ## Goal
@@ -68,6 +77,8 @@ const { state: { webhooks } } = await quickstrap(
 webhooks.debug();
 ```
 
+The library will take care of constructing and initializing your modules in the proper order (by resolving dependencies as a graph). It also enables proper teardown by reversing the order of module initialization.
+
 ## Features and remarks
 
 - Modules will be reused by default, so if you declare 5 modules that depend on another module then 6 modules will be constructed in total.
@@ -75,8 +86,6 @@ webhooks.debug();
 - Modules can be referenced by an alias. Got a logger module that prints to console and another one that prints nothing, both with different classnames? Just register one with an alias! You can also use aliases when requesting modules for injection.
 - Cyclic dependency graphs (A->B->C->A) are supported as long as one of the dependencies is marked as _optional_. In transpiled code you might have to use string aliases, otherwise you'll encounter undefined imports.
 - Currently the modules can only be created using a no-argument _new_ call. In the future it will be possible to define a default factory function and to require exclusive modules with custom arguments per injection.
-- It is possible to avoid `addModuleClass` calls at all. An option might be added to enable _registering-during-injection_ if a class is provided.
-- I might provide some extra modules that wrap some popular libraries such as Express or Mongo. This would enable instant prototyping of some simple web apps with this framework.
 - Interaction with transpilers (Babel, TypeScript) and bundlers (Browserify, Webpack) is not tested at this moment. They are known to modify class names and might break some internal mechanisms of this library.
 - SystemState methods are secured with a semaphore. If your module somehow tries to call a setup while being in a setup phase then an error will be thrown. This is to ensure consistent operation.
 - SystemState is a Module itself! You can take advantage of this and define very complex multi-domain applications that are separated from each other while you keep the ability to scale the project further easily.
@@ -130,6 +139,8 @@ class MyModule extends Module {
     super.teardown(); // Make sure the internal state knows about this
 
     // Cleanup connections, handles or other resources
+    // Dependencies injected with `request` are guaranteed NOT to be torn down
+    // Optional dependencies might have been torn down
   }
 }
 ```
@@ -256,6 +267,39 @@ test('My mocked module', () => {
 When your project is modular you can start thinking about microservices. With _Modularity_ you're one step away from being able to control your modules easily. Just bootstrap what you need in separate containers - the library will take care of dependencies. If your module doesn't need a database connection or a distributed cache - it won't try to set it up.
 
 The problem of communicating separated microservices is left to you to solve. Will it be a module which will handle a Message Queue, or some RPC abstraction? Wrap your transport layer in a Module and inject it - only where needed!
+
+## Design tips
+
+When building a project using this library consider following these guidelines:
+
+- Consider structuring your project with the following directories:
+  - `entrypoints` are scripts which can be run with the `node` command, they should contain System construction and `bootstrap` calls with proper modules
+    - An example of an entrypoint could be a `main.js` file which would start all major modules
+    - Another example would be a `stats.js` file which would load modules related to data storage to only print some usage statistics
+    - Another example would be a `microservice.js` file which would only load some modules specified as command arguments
+  - `modules` should contain module definitions in a per-feature fashion (if possible). It is recommended to avoid shallow and wide structures, instead try to subdivide modules into functional groups.
+    - It is recommended to add tests directly next to implementation files.
+    - If the module is complex then create a `tests` directory and store test files there.
+
+- Always use named exports. This allows consistent class names across the project.
+  - DON'T `module.exports = MyClass` or `export default MyClass` because `const MyDifferentName = require('...')` and `import MyDifferentName from ....`
+  - DO `module.exports = { MyClass }` or `export MyClass`
+
+- Name your module classes with `*Module` suffix.
+
+- Avoid building shallow system structures. Instead try to design your modules in a tree-like family by creating a module that only has a responsibility of containing references to other modules.
+  - DON'T `quickstrap({ UsersEndpoints, UserModel, ExpressServer, ExpressSessions, Database, ... })` because you'll end up with a long list of modules which will most likely be duplicated in some of your tests and entrypoints
+  - DO `quickstrap({ AllEndpoints, AllModels, Database, ... })` because you'll be able to easily build new entrypoints and tests with just a few module references
+
+- Consider creating a module for environment variable access. Do not limit yourself to `process.env`, there can be other sources of configuration (`.env`, Redis, 3rd party services). Take advantage of this module to catch situations where a variable might not have been set - throw errors or assign defaults.
+
+- Consider creating a module for logging. While I do not recommend managing logs in your application - such a module might be useful to properly format your logs before processing with another tool (assign a date, print in a desired format etc.). It will also enable an easy switch to libraries such as `winston`.
+
+- When working with message queues or databases - consider defining a `teardown` procedure which would wait for all current operations to be finished before closing connections.
+
+- Consider adding `SIGINT/SIGHUP/SIGTERM` handlers to perform graceful teardown of modules.
+
+- This library takes advantage of the [debug](https://www.npmjs.com/package/debug) package. Make sure to check it out and consider using it in your project.
 
 ## Contributing
 
