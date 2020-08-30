@@ -4,6 +4,8 @@ This document provides a log of changes. It is currently maintained by hand.
 
 ## (master)
 
+- [prefab][mongoose-module] Fixed `getModel` returning the schema instead of the model (yikes!)
+- [prefab][mongoose-module] Added setup guards to `registerModel` and `getModel`
 - [prefab][express-module] Fixed http request type proxy methods not accepting a path (yikes!)
 
 ## v0.3

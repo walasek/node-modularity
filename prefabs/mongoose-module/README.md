@@ -41,6 +41,9 @@ class MongooseModule extends MongooseModuleBase {
             }
         );
 
+        // This is how you can register mongoose models
+        // It is NOT recommended to do it in this class
+        // Instead create separate Modules which will call this instead
         this.registerModel('User', UserSchema);
     }
 }
@@ -57,6 +60,9 @@ class DatabaseSeedingModule extends Module {
         super({
             inject: request => {
                 this.db = request(MongooseModule);
+
+                // Register your models before setup
+                this.db.registerModel('SomeModel', SomeSchema);
             }
         })
     }

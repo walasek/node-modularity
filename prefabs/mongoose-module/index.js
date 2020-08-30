@@ -17,14 +17,23 @@ class MongooseModuleBase extends Module {
 		if (this.schemas[name]) {
 			throw Error(`Schema ${name} is already registered`);
 		}
+		if (this.moduleWasSetUp()) {
+			throw Error(
+				`Cannot register model ${name}, database already set up.` +
+					`Move model registration to the injection function.`
+			);
+		}
 		this.schemas[name] = schema;
 	}
 
 	getModel(name) {
-		if (!this.schemas[name]) {
-			throw Error(`Schema ${name} does not exist`);
+		if (!this.models[name]) {
+			throw Error(`Model ${name} does not exist`);
 		}
-		return this.schemas[name];
+		if (!this.moduleWasSetUp()) {
+			throw Error(`Cannot access model ${name}. Database is not set up.`);
+		}
+		return this.models[name];
 	}
 
 	async setup() {
