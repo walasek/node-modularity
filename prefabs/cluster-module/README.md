@@ -104,7 +104,7 @@ interface MyClusterJobs {
 
 class MyClusterModule extends ClusterModuleBase<MyClusterJobs> {
     async setup() {
-        this.addJobType('jobName', async (a: number, b: number, c:number) => 'result');
+        this.addJobType('jobName', async (a: number, b: number, c:string) => 'result');
         super.setup();
     }
 }
