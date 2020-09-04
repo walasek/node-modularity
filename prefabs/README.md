@@ -8,3 +8,4 @@ Note that prefabs may not be fully tested. They do not count towards the total l
 | --- | --- | --- |
 | [mongoose-module](./mongoose-module) | [mongoose](https://www.npmjs.com/package/mongoose) | Prototype |
 | [express-module](./express-module) | [express](https://www.npmjs.com/package/express) | Prototype |
+| [cluster-module](./cluster-module) | [cluster](https://nodejs.org/api/cluster.html) | Prototype, experimental |
