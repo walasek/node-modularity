@@ -1,4 +1,4 @@
-import { ClusterModuleBase, ClusterModuleJobs } from './../../prefabs/cluster-module';
+import { ClusterModuleBase } from './../../prefabs/cluster-module';
 import { Module, SystemState, quickstrap } from '../..';
 import { MongooseModuleBase } from '../../prefabs/mongoose-module';
 import { Mongoose } from 'mongoose';
