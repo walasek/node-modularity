@@ -299,6 +299,8 @@ When building a project using this library consider following these guidelines:
 
 - Consider adding `SIGINT/SIGHUP/SIGTERM` handlers to perform graceful teardown of modules.
 
+- Consider using [event emitters](https://nodejs.org/api/events.html) to further reverse dependencies and introduce more event-driven behaviour.
+
 - This library takes advantage of the [debug](https://www.npmjs.com/package/debug) package. Make sure to check it out and consider using it in your project.
 
 ## Contributing
