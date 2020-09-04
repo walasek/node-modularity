@@ -1,3 +1,4 @@
+import { ClusterModuleBase, ClusterModuleJobs } from './../../prefabs/cluster-module';
 import { Module, SystemState, quickstrap } from '../..';
 import { MongooseModuleBase } from '../../prefabs/mongoose-module';
 import { Mongoose } from 'mongoose';
@@ -32,6 +33,13 @@ class MyMongoose extends MongooseModuleBase {
 		super(new Mongoose(), 'abc', {useNewUrlParser: true}, { exclusive: true });
 	}
 }
+
+interface MyClusterJobs {
+	jobName: (a: number, b: number, c: string) => string;
+}
+class MyCluster extends ClusterModuleBase<MyClusterJobs>  {}
+const cls = new MyCluster();
+(cls as unknown as MyClusterJobs).jobName(1,2,'a');
 
 class NotAMod {}
 
