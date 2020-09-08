@@ -137,6 +137,14 @@ class Module {
 			);
 		}
 	}
+
+	getRequiredDependencies() {
+		return [...this._module.options.dependencies];
+	}
+
+	getOptionalDependencies() {
+		return [...this._module.options.optionalDependencies];
+	}
 }
 
 module.exports = Module;

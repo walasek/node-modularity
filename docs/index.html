@@ -335,13 +335,16 @@ test('My mocked module', () => {
 <p>Consider creating a module for environment variable access. Do not limit yourself to <code>process.env</code>, there can be other sources of configuration (<code>.env</code>, Redis, 3rd party services). Take advantage of this module to catch situations where a variable might not have been set - throw errors or assign defaults.</p>
 </li>
 <li>
-<p>Consider creating a module for logging. While I do not recommend managing logs in your application - such a module might be useful to properly format your logs before processing with another tool (assign a date, print in a desired format etc.). It will also enable an easy switch to libraries such as <code>winston</code>.</p>
+<p>Consider creating a module for logging. While I do not recommend managing logs in your application - such a module might be useful to properly format your logs before processing with another tool (assign a date, print in a desired format etc.). It will also enable an easy switch to libraries such as <code>winston</code>. Make sure to also provide fallback static methods for logging when the modular system is not yet initialized (or has failed to set up).</p>
 </li>
 <li>
 <p>When working with message queues or databases - consider defining a <code>teardown</code> procedure which would wait for all current operations to be finished before closing connections.</p>
 </li>
 <li>
 <p>Consider adding <code>SIGINT/SIGHUP/SIGTERM</code> handlers to perform graceful teardown of modules.</p>
+</li>
+<li>
+<p>Consider using <a href="https://nodejs.org/api/events.html">event emitters</a> to further reverse dependencies and introduce more event-driven behaviour.</p>
 </li>
 <li>
 <p>This library takes advantage of the <a href="https://www.npmjs.com/package/debug">debug</a> package. Make sure to check it out and consider using it in your project.</p>
