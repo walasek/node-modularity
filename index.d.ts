@@ -19,6 +19,9 @@ export class Module {
 	moduleWasSetUp(): boolean;
 	modulePerformInjection(requestFn: ModuleRequestFunction): void;
 	assertDependenciesSetup(): void;
+
+	getRequiredDependencies(): Module[];
+	getOptionalDependencies(): Module[];
 }
 
 export type ClassOfMembers<T> = { [P in keyof T]: ClassOf<T[P]> | string };
@@ -38,6 +41,8 @@ export class SystemState extends Module {
 	setup(): Promise<void>;
 	teardown(): Promise<void>;
 	invertSetupModulesList(): void;
+
+	getModulesList(): Module[];
 }
 
 export type QuickstrapKnownModules = ModuleClass[] | {[alias: string]: ModuleClass};

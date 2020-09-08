@@ -4,6 +4,8 @@ This document provides a log of changes. It is currently maintained by hand.
 
 ## (master)
 
+- Added methods to extract dependencies from SystemState and Module (for debugging purposes for example)
+
 ## v0.4
 
 - [prefab][mongoose-module] Fixed `getModel` returning the schema instead of the model (yikes!)

@@ -137,6 +137,8 @@ module.exports = async function (test) {
 			t.equal(aConstructorSpy.callCount, 1, 'A was constructed once');
 			t.equal(bConstructorSpy.callCount, 1, 'B was constructed once');
 			t.equal(cConstructorSpy.callCount, 1, 'C was constructed once');
+
+			t.equal(state.b.c.getOptionalDependencies()[0], state.a);
 		});
 
 		await t.test('Setup', async t => {

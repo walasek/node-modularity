@@ -51,6 +51,9 @@ module.exports = async function (test) {
 
 			t.equal(cConstructorSpy.callCount, 1, 'C was constructed once');
 			t.equal(bConstructorSpy.callCount, 2, 'B was constructed twice for A');
+
+			t.equal(system.getModulesList().length, 4);
+			t.equal(state.a.getRequiredDependencies().length, 2);
 		});
 
 		await t.test('Setup', async t => {
