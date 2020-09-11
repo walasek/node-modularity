@@ -6,6 +6,7 @@ This document provides a log of changes. It is currently maintained by hand.
 
 - Added methods to extract dependencies from SystemState and Module (for debugging purposes for example)
 - [prefab][express-module] Fixed middleware option TS definitions requiring both `before` and `after` properties
+- [prefab][express-module] Fixed missing middleware options for `use`
 
 ## v0.4
 

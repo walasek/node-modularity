@@ -21,8 +21,7 @@ export class ExpressModuleBase extends Module {
 
 	getApp(): e.Application;
 
-	use<T extends Module>(caller: T | Nameable, fn: e.RequestHandler): void;
-
+	use<T extends Module>(caller: T | Nameable, fn: e.RequestHandler, options?: MiddlewareOptions): void;
 	get: HTTPMethodProxy;
 	post: HTTPMethodProxy;
 	put: HTTPMethodProxy;
