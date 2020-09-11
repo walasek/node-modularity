@@ -2,8 +2,8 @@ import { Module, ModuleConstructorOptions } from '../../';
 import * as e from 'express';
 
 export interface MiddlewareOptions {
-	after: Module | Module[];
-	before: Module | Module[];
+	after?: Module | Module[];
+	before?: Module | Module[];
 	path?: string;
 }
 export type MiddlewareType = "use" | "get" | "post" | "put" | "delete" | "options" | "head";
