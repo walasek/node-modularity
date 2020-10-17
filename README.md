@@ -18,6 +18,7 @@ npm install --save node-modularity
   - [Graceful teardown](#graceful-teardown)
   - [Testing](#testing)
   - [Microservices](#microservices)
+  - [Visualization](#visualization)
 - [Design tips](#design-tips)
 - [Contributing](#contributing)
 
@@ -267,6 +268,21 @@ test('My mocked module', () => {
 When your project is modular you can start thinking about microservices. With _Modularity_ you're one step away from being able to control your modules easily. Just bootstrap what you need in separate containers - the library will take care of dependencies. If your module doesn't need a database connection or a distributed cache - it won't try to set it up.
 
 The problem of communicating separated microservices is left to you to solve. Will it be a module which will handle a Message Queue, or some RPC abstraction? Wrap your transport layer in a Module and inject it - only where needed!
+
+### Visualization
+
+To make sure you won't have to reverse engineer your system after it grows to figure out what's going on - the library provides a _visualization_ functionality (thanks to the great [vis-network](https://github.com/visjs/vis-network) project!). The `visualize` function returns HTML code that is ready to be saved to a file or sent as a response to an HTTP query.
+
+```javascript
+const { visualize } = require('node-modularity');
+
+// const system = ...; // Some system definition
+system.bootstrap(); // You can visualize the system only after it's bootstrapped (doesn't have to be set up)
+
+require('fs').writeFileSync('mySystem.html', visualize(system));
+```
+
+There's also a [prefab](./prefabs/visualize-express-module) which exposes this render as an express middleware.
 
 ## Design tips
 

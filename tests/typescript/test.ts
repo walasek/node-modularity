@@ -4,6 +4,7 @@ import { MongooseModuleBase } from '../../prefabs/mongoose-module';
 import { Mongoose } from 'mongoose';
 import * as express from 'express';
 import { ExpressModuleBase } from '../../prefabs/express-module';
+import { VisualizeExpressModuleBase } from './../../prefabs/visualize-express-module';
 
 class OtherMod extends Module {};
 
@@ -71,6 +72,8 @@ class MyExpress extends ExpressModuleBase {
 		super(express);
 	}
 }
+
+const visMod = new VisualizeExpressModuleBase(MyExpress, 'test');
 
 quickstrap({ web: MyExpress }, {MyExpress}).then(({state}) => {
 	state.web.getApp().listen();
