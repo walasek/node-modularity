@@ -9,6 +9,12 @@ async function runTestFile(file) {
 	});
 }
 
+process.on('unhandledRejection', err => {
+	// eslint-disable-next-line no-console
+	console.log(err);
+	process.exit(1);
+});
+
 if (process.argv[2]) {
 	return runTestFile(process.argv[2]);
 }

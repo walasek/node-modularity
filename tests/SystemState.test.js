@@ -248,5 +248,16 @@ module.exports = async function (test) {
 				t.throws(() => system.addModuleClass({}));
 			});
 		});
+
+		t.test('Module construction', t => {
+			t.test('Sets parent reference during construction', t => {
+				class SomeModuleAgain extends Module {}
+
+				system.addModuleClass(SomeModuleAgain);
+				const mod = system.constructModule(SomeModuleAgain);
+
+				t.equal(mod.getSystemStateReference(), system);
+			});
+		});
 	});
 };
