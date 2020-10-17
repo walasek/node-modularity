@@ -22,6 +22,9 @@ export class Module {
 
 	getRequiredDependencies(): Module[];
 	getOptionalDependencies(): Module[];
+
+	setSystemStateReference(system: SystemState): void;
+	getSystemStateReference(): SystemState;
 }
 
 export type ClassOfMembers<T> = { [P in keyof T]: ClassOf<T[P]> | string };
@@ -48,3 +51,4 @@ export class SystemState extends Module {
 export type QuickstrapKnownModules = ModuleClass[] | {[alias: string]: ModuleClass};
 export type QuickstrapResult<K> = { state: K, system: SystemState };
 export function quickstrap<K>(requirements: ClassOfMembers<K>, knownModules: QuickstrapKnownModules): Promise<QuickstrapResult<K>>;
+export function visualize(system: SystemState): string;

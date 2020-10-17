@@ -5,8 +5,13 @@ This document provides a log of changes. It is currently maintained by hand.
 ## (master)
 
 - Added methods to extract dependencies from SystemState and Module (for debugging purposes for example)
+- Added the ability to reference the SystemState from a Module
+- Added a system visualization function
+- Updated all dependencies
 - [prefab][express-module] Fixed middleware option TS definitions requiring both `before` and `after` properties
 - [prefab][express-module] Fixed missing middleware options for `use`
+- [prefab][express-module] Added `supertest` tests
+- [prefab][visualize-express-module] Introduced a prefab to expose system visualization through express-module
 
 ## v0.4
 
