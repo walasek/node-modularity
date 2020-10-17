@@ -2,7 +2,7 @@
 
 This document provides a log of changes. It is currently maintained by hand.
 
-## (master)
+## v0.5
 
 - Added methods to extract dependencies from SystemState and Module (for debugging purposes for example)
 - Added the ability to reference the SystemState from a Module
