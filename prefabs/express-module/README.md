@@ -27,6 +27,9 @@ class MyWebServer extends ExpressModuleBase {
     }
 
     async postSetup() {
+        // This is required!
+        await super.postSetup();
+
         // listen must be called somewhere
         // can also be done by exposing this module in system state
         await this.listen(80);
