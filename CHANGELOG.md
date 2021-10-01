@@ -2,6 +2,14 @@
 
 This document provides a log of changes. It is currently maintained by hand.
 
+## v0.6
+
+- Added Node 16 to Travis CI
+- Updated all dependencies
+- Updated docs
+- [prefab][express-module] Fixed README not mentioning `super.postSetup`
+- [prefab][visualize-express-module] Fixed `setup` method
+
 ## v0.5
 
 - Added methods to extract dependencies from SystemState and Module (for debugging purposes for example)
