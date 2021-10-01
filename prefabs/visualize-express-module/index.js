@@ -18,6 +18,7 @@ class VisualizeExpressModuleBase extends Module {
 	}
 
 	async setup() {
+		super.setup();
 		this.mod.get(this, this.path, (_, res) => {
 			res.send(visualize(this.getSystemStateReference()));
 		});
