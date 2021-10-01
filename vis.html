@@ -1,0 +1,28 @@
+
+<html>
+	<head>
+		<title>Visualization</title>
+		<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+		<style type="text/css">
+			body {
+				margin: 0;
+			}
+			#mynetwork {
+				width: 98vw;
+				height: 98vh;
+				border: 1px solid lightgray;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="mynetwork"></div>
+		<script type="text/javascript">
+			var nodes = new vis.DataSet([{"id":0,"label":"B","color":"silver","shape":"box"},{"id":1,"label":"B","color":"silver","shape":"box"},{"id":2,"label":"B","color":"silver","shape":"box"},{"id":3,"label":"B","color":"silver","shape":"box"},{"id":4,"label":"C"},{"id":5,"label":"C"},{"id":6,"label":"A"},{"id":7,"label":"A"}]);
+			var edges = new vis.DataSet([{"from":0,"to":5,"arrows":{"from":{"enabled":true,"type":"arrow"}},"color":{"color":"rgb(43,124,233)"}},{"from":1,"to":5,"arrows":{"from":{"enabled":true,"type":"arrow"}},"color":{"color":"rgb(43,124,233)"}},{"from":2,"to":5,"arrows":{"from":{"enabled":true,"type":"arrow"}},"color":{"color":"rgb(43,124,233)"}},{"from":3,"to":5,"arrows":{"from":{"enabled":true,"type":"arrow"}},"color":{"color":"rgb(43,124,233)"}},{"from":6,"to":1,"arrows":{"from":{"enabled":true,"type":"arrow"}},"color":{"color":"rgb(43,124,233)"}},{"from":6,"to":0,"arrows":{"from":{"enabled":true,"type":"arrow"}},"color":{"color":"rgb(43,124,233)"}},{"from":7,"to":3,"arrows":{"from":{"enabled":true,"type":"arrow"}},"color":{"color":"rgb(43,124,233)"}},{"from":7,"to":2,"arrows":{"from":{"enabled":true,"type":"arrow"}},"color":{"color":"rgb(43,124,233)"}}]);
+			var container = document.getElementById('mynetwork');
+			var data = {nodes: nodes, edges: edges};
+			var options = {physics:{solver: 'forceAtlas2Based'}};
+			var network = new vis.Network(container, data, options);
+		</script>
+	</body>
+</html>
