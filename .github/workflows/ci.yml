@@ -4,21 +4,6 @@ on:
 - push
 
 jobs:
-  test_legacy:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [6, 8, 10]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: ''
-      - run: npm i
-      - run: npm run check-dts
-      - run: npm t
-
   test:
     runs-on: ubuntu-latest
     strategy:
