@@ -6,7 +6,7 @@ module.exports = {
 	env: {
 		node: true,
 	},
-	plugins: ['node', 'promise', 'security'],
+	plugins: ['node', 'security'],
 	rules: {
 		'array-element-newline': ['error', 'consistent'],
 		'arrow-parens': ['error', 'as-needed'],
