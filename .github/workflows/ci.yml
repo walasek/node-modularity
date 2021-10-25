@@ -4,11 +4,26 @@ on:
 - push
 
 jobs:
+  test_legacy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [6, 8, 10]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: ''
+      - run: npm i
+      - run: npm run check-dts
+      - run: npm t
+
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10, 12, 14, 16]
+        node-version: [12, 14, 16]
 
     steps:
     - uses: actions/checkout@v2
@@ -19,7 +34,6 @@ jobs:
         cache: ''
     - run: npm i
     - run: npm run lint
-      if: matrix.node-version > 10
     - run: npm run check-dts || exit 0
     - run: npm run coverage
     - run: npm run docs
