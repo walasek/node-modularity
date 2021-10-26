@@ -20,7 +20,7 @@ jobs:
         cache: ''
     - run: npm i
     - run: npm run lint
-    - run: npm run check-dts || exit 0
+    - run: npm run check-dts
     - run: npm run coverage
     - run: npm run docs
     - uses: codecov/codecov-action@v2
