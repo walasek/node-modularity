@@ -63,7 +63,7 @@
     "sinon": "^14",
     "supertest": "^6",
     "typescript": "^4",
-    "zora": "^5"
+    "zora": "^4"
   },
   "peerDependencies": {
     "mongoose": "^6"
