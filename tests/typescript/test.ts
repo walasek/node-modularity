@@ -31,7 +31,7 @@ class SomeMod extends Module {
 
 class MyMongoose extends MongooseModuleBase {
 	constructor(){
-		super(new Mongoose(), 'abc', {useNewUrlParser: true}, { exclusive: true });
+		super(new Mongoose(), 'abc', { dbName: 'abc123' }, { exclusive: true });
 	}
 }
 
