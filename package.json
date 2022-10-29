@@ -53,19 +53,19 @@
     "eslint-plugin-prettier": "^4",
     "eslint-plugin-security": "^1",
     "express": "^4",
-    "faucet": "^0.0.1",
-    "glob": "^7",
+    "faucet": "^0.0.3",
+    "glob": "^8",
     "jsdoc": "^3",
-    "mongoose": "^5",
+    "mongoose": "^6",
     "nodemon": "^2",
     "nyc": "^15",
     "prettier": "^2",
-    "sinon": "^11",
+    "sinon": "^14",
     "supertest": "^6",
     "typescript": "^4",
-    "zora": "^4"
+    "zora": "^5"
   },
   "peerDependencies": {
-    "mongoose": "^5"
+    "mongoose": "^6"
   }
 }
